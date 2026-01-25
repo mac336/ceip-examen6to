@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego - La Función de Reproducción</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .inicio {
+            text-align: center;
+        }
+        
+        .inicio button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            margin: 15px auto;
+        }
+        
+        .inicio button:hover {
+            transform: scale(1.05);
+        }
+        
+        .pregunta-container {
+            display: none;
+        }
+        
+        .pregunta {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .pregunta h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .opcion {
+            background: white;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+        
+        .opcion:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .opciones.ocultas .opcion {
+            background: #9e9e9e;
+            color: #9e9e9e;
+            user-select: none;
+            border-color: #9e9e9e;
+            cursor: default;
+        }
+        
+        .opciones.ocultas .opcion:hover {
+            transform: none;
+            border-color: #9e9e9e;
+        }
+        
+        .opcion.correcta {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        
+        .opcion.incorrecta {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+        
+        .opcion.deshabilitada {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .botones {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .btn-siguiente {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-siguiente:hover {
+            background: #5568d3;
+        }
+        
+        .btn-listo {
+            background: #ff9800;
+            color: white;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .btn-listo:hover {
+            background: #f57c00;
+        }
+        
+        .btn-reiniciar {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-reiniciar:hover {
+            background: #633d8a;
+        }
+        
+        .progreso {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .resultado {
+            display: none;
+            text-align: center;
+        }
+        
+        .resultado h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        .puntuacion {
+            font-size: 3em;
+            color: #764ba2;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .mensaje {
+            font-size: 1.2em;
+            color: #555;
+            margin: 20px 0;
+        }
+        
+        .feedback {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .feedback.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Juego: La Función de Reproducción</h1>
+        
+        <div class="inicio" id="inicio">
+            <p style="font-size: 1.2em; margin-bottom: 30px; color: #555;">
+                ¡Pon a prueba tus conocimientos! Elige qué unidad quieres repasar:
+            </p>
+            <button onclick="seleccionarUnidad(1)">📚 Unidad 1: Los Aparatos Reproductores</button>
+            <button onclick="seleccionarUnidad(2)">📚 Unidad 2: Las Células Sexuales y la Fecundación</button>
+            <button onclick="seleccionarUnidad(3)">📚 Unidad 3: El Embarazo, el Parto y la Lactancia</button>
+            <button onclick="seleccionarUnidad(4)">📚 Unidad 4: La Reproducción y la Salud</button>
+        </div>
+        
+        <div class="pregunta-container" id="juego">
+            <div class="progreso" id="progreso"></div>
+            <div class="pregunta" id="pregunta-actual"></div>
+            <div class="feedback" id="feedback"></div>
+            <div class="botones">
+                <button class="btn btn-reiniciar" onclick="volverAlInicio()">🔄 Volver al Menú</button>
+                <button class="btn btn-siguiente" id="btn-siguiente" onclick="siguientePregunta()" style="display: none;">
+                    Siguiente ➡️
+                </button>
+            </div>
+        </div>
+        
+        <div class="resultado" id="resultado">
+            <h2>🎉 ¡Juego Completado!</h2>
+            <div class="puntuacion" id="puntuacion-final"></div>
+            <div class="mensaje" id="mensaje-final"></div>
+            <button class="btn btn-reiniciar" onclick="volverAlInicio()">🔄 Volver al Menú</button>
+        </div>
+    </div>
+
+    <script>
+        const preguntasUnidad1 = [
+            {
+                pregunta: "¿Qué significa que los seres humanos tenemos reproducción sexual?",
+                opciones: [
+                    "Que en la reproducción participan dos personas del mismo sexo",
+                    "Que en la reproducción participan dos personas de distinto sexo",
+                    "Que solo se necesita una persona para reproducirse",
+                    "Que la reproducción ocurre sin células sexuales"
+                ],
+                correcta: 1,
+                explicacion: "Los seres humanos tenemos reproducción sexual, lo que significa que en la reproducción participan dos personas de distinto sexo."
+            },
+            {
+                pregunta: "¿De qué depende el sexo biológico?",
+                opciones: [
+                    "Del tamaño de la persona",
+                    "Del aparato reproductor",
+                    "De la edad",
+                    "Del color de pelo"
+                ],
+                correcta: 1,
+                explicacion: "El sexo con el que nacemos, esto es, el sexo biológico femenino o masculino, depende de nuestro aparato reproductor."
+            },
+            {
+                pregunta: "¿Qué produce cada aparato reproductor?",
+                opciones: [
+                    "Vitaminas diferentes",
+                    "Células sexuales distintas",
+                    "Hormonas iguales",
+                    "Los mismos órganos"
+                ],
+                correcta: 1,
+                explicacion: "Hay un aparato femenino y otro masculino. Cada uno produce células sexuales distintas, que son unas células especiales que intervienen en la reproducción."
+            },
+            {
+                pregunta: "¿Hasta cuándo no maduran los aparatos reproductores?",
+                opciones: [
+                    "Hasta los 5 años",
+                    "Hasta la pubertad",
+                    "Hasta los 25 años",
+                    "Hasta el nacimiento"
+                ],
+                correcta: 1,
+                explicacion: "Los aparatos reproductores no maduran hasta la pubertad."
+            },
+            {
+                pregunta: "¿Cuándo suele iniciarse la pubertad?",
+                opciones: [
+                    "A partir de los 5 años",
+                    "A partir de los 10 años",
+                    "A partir de los 15 años",
+                    "A partir de los 18 años"
+                ],
+                correcta: 1,
+                explicacion: "La pubertad suele iniciarse a partir de los 10 años, aunque en algunas personas se puede adelantar o retrasar."
+            },
+            {
+                pregunta: "¿Qué ocurre durante la pubertad?",
+                opciones: [
+                    "El cuerpo se hace más pequeño",
+                    "Se producen cambios en nuestro cuerpo que hacen posible la función reproductora",
+                    "Desaparece el aparato reproductor",
+                    "No ocurre ningún cambio"
+                ],
+                correcta: 1,
+                explicacion: "En este periodo de tiempo se producen cambios en nuestro cuerpo que hacen posible la función reproductora."
+            },
+            {
+                pregunta: "¿Dónde se forman las células sexuales femeninas, los óvulos?",
+                opciones: [
+                    "En el útero",
+                    "En las trompas de Falopio",
+                    "En los ovarios",
+                    "En la vagina"
+                ],
+                correcta: 2,
+                explicacion: "En el interior de los ovarios se forman las células sexuales femeninas, los óvulos."
+            },
+            {
+                pregunta: "¿Cuál es la función de las trompas de Falopio?",
+                opciones: [
+                    "Producir óvulos",
+                    "Cada una abraza un ovario y lo comunica con el útero",
+                    "Proteger el útero",
+                    "Formar bebés"
+                ],
+                correcta: 1,
+                explicacion: "Cada una de las trompas abraza un ovario y lo comunica con el útero."
+            },
+            {
+                pregunta: "¿Cuál es la función del útero en el aparato reproductor femenino?",
+                opciones: [
+                    "Producir óvulos",
+                    "Es donde crecen los bebés hasta su nacimiento",
+                    "Comunicar el útero con el exterior",
+                    "Proteger el clítoris"
+                ],
+                correcta: 1,
+                explicacion: "El útero es un órgano muscular hueco. En su interior crecen los bebés hasta su nacimiento."
+            },
+            {
+                pregunta: "¿Qué tipo de órgano es el útero?",
+                opciones: [
+                    "Un órgano sólido",
+                    "Un órgano muscular hueco",
+                    "Un órgano blando lleno",
+                    "Un órgano rígido"
+                ],
+                correcta: 1,
+                explicacion: "El útero es un órgano muscular hueco."
+            },
+            {
+                pregunta: "¿Qué es la vagina?",
+                opciones: [
+                    "Un órgano que produce óvulos",
+                    "Un conducto que se comunica con el útero y con el exterior del cuerpo",
+                    "Un órgano muscular donde crecen los bebés",
+                    "Una célula sexual"
+                ],
+                correcta: 1,
+                explicacion: "La vagina es un conducto que se comunica con el útero y con el exterior del cuerpo."
+            },
+            {
+                pregunta: "¿Qué es la vulva?",
+                opciones: [
+                    "Un órgano interno del aparato reproductor",
+                    "El conjunto de órganos femeninos que son visibles",
+                    "Una célula sexual femenina",
+                    "Un conducto interno"
+                ],
+                correcta: 1,
+                explicacion: "La vulva es el conjunto de órganos femeninos que son visibles."
+            },
+            {
+                pregunta: "¿Por qué está formada la vulva?",
+                opciones: [
+                    "Por el útero y los ovarios",
+                    "Por unos pliegues de piel, los labios mayores y los menores",
+                    "Por las trompas de Falopio",
+                    "Por células sexuales"
+                ],
+                correcta: 1,
+                explicacion: "La vulva está formada por unos pliegues de piel, los labios mayores y los menores."
+            },
+            {
+                pregunta: "¿Qué protegen los labios mayores y menores?",
+                opciones: [
+                    "El útero",
+                    "Los ovarios",
+                    "Un órgano llamado clítoris y la entrada a la vagina",
+                    "Las trompas de Falopio"
+                ],
+                correcta: 2,
+                explicacion: "Estos (los labios mayores y menores) protegen un órgano llamado clítoris y la entrada a la vagina."
+            },
+            {
+                pregunta: "¿Dónde se abre la uretra en las mujeres?",
+                opciones: [
+                    "En el útero",
+                    "En las trompas de Falopio",
+                    "En la vulva, entre el clítoris y la entrada a la vagina",
+                    "En los ovarios"
+                ],
+                correcta: 2,
+                explicacion: "En las mujeres, la uretra se abre al exterior en la vulva, entre el clítoris y la entrada a la vagina."
+            },
+            {
+                pregunta: "¿Dónde se producen las células sexuales masculinas, los espermatozoides?",
+                opciones: [
+                    "En la próstata",
+                    "En los testículos",
+                    "En la uretra",
+                    "En el pene"
+                ],
+                correcta: 1,
+                explicacion: "Los testículos son dos órganos que están dentro de una bolsa llamada escroto. En ellos se producen las células sexuales masculinas, los espermatozoides."
+            },
+            {
+                pregunta: "¿Qué es el escroto?",
+                opciones: [
+                    "Un conducto que transporta espermatozoides",
+                    "Una bolsa donde están los testículos",
+                    "Un órgano que produce líquido",
+                    "La punta del pene"
+                ],
+                correcta: 1,
+                explicacion: "Los testículos son dos órganos que están dentro de una bolsa llamada escroto."
+            },
+            {
+                pregunta: "¿Cuántos testículos hay?",
+                opciones: [
+                    "Uno",
+                    "Dos",
+                    "Tres",
+                    "Cuatro"
+                ],
+                correcta: 1,
+                explicacion: "Los testículos son dos órganos que están dentro de una bolsa llamada escroto."
+            },
+            {
+                pregunta: "¿Qué órgano conduce los espermatozoides desde los testículos hasta la uretra?",
+                opciones: [
+                    "La próstata",
+                    "Los conductos deferentes",
+                    "El pene",
+                    "El escroto"
+                ],
+                correcta: 1,
+                explicacion: "Los conductos deferentes conducen los espermatozoides desde los testículos hasta la uretra."
+            },
+            {
+                pregunta: "¿Cuál es la función de la próstata?",
+                opciones: [
+                    "Producir espermatozoides",
+                    "Producir un líquido que sirve a los espermatozoides de alimento y transporte",
+                    "Conducir los espermatozoides al exterior",
+                    "Proteger el glande"
+                ],
+                correcta: 1,
+                explicacion: "La próstata produce un líquido que sirve a los espermatozoides de alimento y transporte. Este líquido se vacía en la uretra."
+            },
+            {
+                pregunta: "¿Dónde se vacía el líquido que produce la próstata?",
+                opciones: [
+                    "En los testículos",
+                    "En la uretra",
+                    "En el pene",
+                    "En el escroto"
+                ],
+                correcta: 1,
+                explicacion: "Este líquido (de la próstata) se vacía en la uretra."
+            },
+            {
+                pregunta: "¿Qué función tiene la uretra en el aparato reproductor masculino?",
+                opciones: [
+                    "Produce espermatozoides",
+                    "Es un conducto que forma parte del aparato urinario y conduce los espermatozoides junto con el líquido de la próstata al exterior",
+                    "Produce líquido de transporte",
+                    "Protege los testículos"
+                ],
+                correcta: 1,
+                explicacion: "La uretra es un conducto que también forma parte del aparato urinario. Conduce los espermatozoides junto con el líquido de la próstata al exterior."
+            },
+            {
+                pregunta: "¿De qué otro aparato forma parte la uretra?",
+                opciones: [
+                    "Del aparato digestivo",
+                    "Del aparato urinario",
+                    "Del aparato circulatorio",
+                    "Del aparato respiratorio"
+                ],
+                correcta: 1,
+                explicacion: "La uretra es un conducto que también forma parte del aparato urinario."
+            },
+            {
+                pregunta: "¿Qué es el pene?",
+                opciones: [
+                    "Un órgano interno que produce espermatozoides",
+                    "Un órgano externo que rodea la uretra",
+                    "Una bolsa que contiene los testículos",
+                    "Un conducto que transporta líquido"
+                ],
+                correcta: 1,
+                explicacion: "El pene es un órgano externo que rodea la uretra."
+            },
+            {
+                pregunta: "¿Qué está en el extremo del pene?",
+                opciones: [
+                    "El escroto",
+                    "El glande",
+                    "La próstata",
+                    "Los testículos"
+                ],
+                correcta: 1,
+                explicacion: "En su extremo (del pene) está el glande."
+            },
+            {
+                pregunta: "¿Qué es el prepucio?",
+                opciones: [
+                    "Un órgano que produce espermatozoides",
+                    "Un pliegue de piel que cubre el glande",
+                    "La punta del pene",
+                    "Un conducto que transporta espermatozoides"
+                ],
+                correcta: 1,
+                explicacion: "El glande está cubierto por un pliegue de piel llamado prepucio."
+            },
+            {
+                pregunta: "¿Qué son los caracteres sexuales?",
+                opciones: [
+                    "Solo los aparatos reproductores",
+                    "Las diferencias físicas entre las personas de distintos sexos",
+                    "Solo el vello corporal",
+                    "Solo la voz"
+                ],
+                correcta: 1,
+                explicacion: "Los caracteres sexuales son las diferencias físicas entre las personas de distintos sexos."
+            },
+            {
+                pregunta: "¿Cuántos tipos de caracteres sexuales hay?",
+                opciones: [
+                    "Uno",
+                    "Dos",
+                    "Tres",
+                    "Cuatro"
+                ],
+                correcta: 1,
+                explicacion: "Hay dos tipos: los caracteres sexuales primarios y los caracteres sexuales secundarios."
+            },
+            {
+                pregunta: "¿Cuáles son caracteres sexuales primarios?",
+                opciones: [
+                    "El desarrollo de las mamas y el vello en las axilas",
+                    "Los aparatos reproductores que están presentes desde el nacimiento",
+                    "La voz grave y el desarrollo de los músculos",
+                    "El crecimiento de las caderas y los testículos"
+                ],
+                correcta: 1,
+                explicacion: "Los caracteres sexuales primarios están presentes desde el nacimiento. Son los aparatos reproductores."
+            },
+            {
+                pregunta: "¿Cuándo están presentes los caracteres sexuales primarios?",
+                opciones: [
+                    "Desde el nacimiento",
+                    "Desde la pubertad",
+                    "Desde los 10 años",
+                    "Desde la adolescencia"
+                ],
+                correcta: 0,
+                explicacion: "Los caracteres sexuales primarios están presentes desde el nacimiento."
+            },
+            {
+                pregunta: "¿Cuándo aparecen los caracteres sexuales secundarios?",
+                opciones: [
+                    "Desde el nacimiento",
+                    "En la pubertad",
+                    "En la vejez",
+                    "A los 5 años"
+                ],
+                correcta: 1,
+                explicacion: "Los caracteres sexuales secundarios aparecen en la pubertad."
+            },
+            {
+                pregunta: "¿Cuál de estos es un carácter sexual secundario en las niñas?",
+                opciones: [
+                    "Los ovarios",
+                    "El útero",
+                    "Se ensanchan las caderas y crecen las mamas",
+                    "La vagina"
+                ],
+                correcta: 2,
+                explicacion: "En las niñas, como caracteres sexuales secundarios, se ensanchan las caderas, crecen las mamas y surge el vello en el pubis y las axilas."
+            },
+            {
+                pregunta: "¿Dónde surge el vello en las niñas durante la pubertad?",
+                opciones: [
+                    "Solo en la cabeza",
+                    "En el pubis y las axilas",
+                    "Solo en las piernas",
+                    "Solo en los brazos"
+                ],
+                correcta: 1,
+                explicacion: "En las niñas surge el vello en el pubis y las axilas."
+            },
+            {
+                pregunta: "¿Cuál de estos es un carácter sexual secundario en los niños?",
+                opciones: [
+                    "Los testículos",
+                    "El pene",
+                    "La voz se hace más grave, crece vello en la cara y en otras partes del cuerpo, y se desarrollan los músculos",
+                    "Los conductos deferentes"
+                ],
+                correcta: 2,
+                explicacion: "En los niños, como caracteres sexuales secundarios, la voz se hace más grave, crece vello en la cara y en otras partes del cuerpo, y se desarrollan los músculos."
+            },
+            {
+                pregunta: "¿Qué le ocurre a la voz de los niños en la pubertad?",
+                opciones: [
+                    "Se hace más aguda",
+                    "Se hace más grave",
+                    "No cambia",
+                    "Desaparece"
+                ],
+                correcta: 1,
+                explicacion: "En los niños la voz se hace más grave."
+            },
+            {
+                pregunta: "¿Dónde crece vello en los niños durante la pubertad?",
+                opciones: [
+                    "Solo en las axilas",
+                    "En la cara y en otras partes del cuerpo",
+                    "Solo en las piernas",
+                    "No crece vello"
+                ],
+                correcta: 1,
+                explicacion: "En los niños crece vello en la cara y en otras partes del cuerpo."
+            }
+        ];
+
+        const preguntasUnidad2 = [
+            {
+                pregunta: "¿Dónde se forman los óvulos?",
+                opciones: [
+                    "En el útero",
+                    "En los ovarios",
+                    "En las trompas de Falopio",
+                    "En la vagina"
+                ],
+                correcta: 1,
+                explicacion: "Los óvulos se forman en los ovarios."
+            },
+            {
+                pregunta: "¿Cómo son los óvulos?",
+                opciones: [
+                    "Son células pequeñas y alargadas",
+                    "Son células grandes y redondeadas",
+                    "Son células medianas y cuadradas",
+                    "Son células minúsculas y planas"
+                ],
+                correcta: 1,
+                explicacion: "Los óvulos son células grandes y redondeadas."
+            },
+            {
+                pregunta: "¿Cuántos óvulos contienen los ovarios al nacer?",
+                opciones: [
+                    "Pocos óvulos",
+                    "Muchos óvulos inmaduros",
+                    "No contienen óvulos",
+                    "Solo un óvulo"
+                ],
+                correcta: 1,
+                explicacion: "Al nacer, los ovarios contienen muchos óvulos inmaduros."
+            },
+            {
+                pregunta: "¿Cuándo comienzan a madurar los óvulos?",
+                opciones: [
+                    "Al nacer",
+                    "En la pubertad",
+                    "A los 5 años",
+                    "A los 20 años"
+                ],
+                correcta: 1,
+                explicacion: "Estos (los óvulos) comienzan a madurar en la pubertad."
+            },
+            {
+                pregunta: "¿Cada cuánto tiempo empieza a madurar un óvulo aproximadamente?",
+                opciones: [
+                    "Cada 14 días",
+                    "Cada 28 días",
+                    "Cada 7 días",
+                    "Cada 60 días"
+                ],
+                correcta: 1,
+                explicacion: "Aproximadamente, cada 28 días empieza a madurar en el ovario."
+            },
+            {
+                pregunta: "¿Cada cuántos días el óvulo maduro sale del ovario?",
+                opciones: [
+                    "A los 7 días",
+                    "A los 14 días",
+                    "A los 21 días",
+                    "A los 28 días"
+                ],
+                correcta: 1,
+                explicacion: "A los 14 días el óvulo maduro sale del ovario y es recogido por la trompa."
+            },
+            {
+                pregunta: "¿Qué recoge el óvulo maduro cuando sale del ovario?",
+                opciones: [
+                    "El útero",
+                    "La trompa",
+                    "La vagina",
+                    "La vulva"
+                ],
+                correcta: 1,
+                explicacion: "A los 14 días el óvulo maduro sale del ovario y es recogido por la trompa."
+            },
+            {
+                pregunta: "Tras salir del ovario, ¿qué recorre el óvulo?",
+                opciones: [
+                    "La vagina",
+                    "La trompa, el útero y la vagina",
+                    "Solo el útero",
+                    "Solo la trompa"
+                ],
+                correcta: 1,
+                explicacion: "Tras salir del ovario, el óvulo recorre la trompa, el útero y la vagina."
+            },
+            {
+                pregunta: "¿Qué ocurre cuando el óvulo sale al exterior junto con restos de sangre del útero?",
+                opciones: [
+                    "Es la ovulación",
+                    "Es la menstruación",
+                    "Es la fecundación",
+                    "Es la pubertad"
+                ],
+                correcta: 1,
+                explicacion: "Por último, sale al exterior junto con restos de sangre del útero. Es la menstruación."
+            },
+            {
+                pregunta: "¿A partir de qué edad las mujeres dejan de producir óvulos maduros?",
+                opciones: [
+                    "A partir de los 30 años",
+                    "A partir de aproximadamente los 50 años",
+                    "A partir de los 40 años",
+                    "A partir de los 60 años"
+                ],
+                correcta: 1,
+                explicacion: "A partir de aproximadamente los 50 años, las mujeres dejan de producir óvulos maduros y se interrumpe la menstruación."
+            },
+            {
+                pregunta: "¿Qué ocurre cuando las mujeres dejan de producir óvulos maduros?",
+                opciones: [
+                    "Continúa la menstruación",
+                    "Se interrumpe la menstruación",
+                    "La menstruación se acelera",
+                    "No ocurre nada"
+                ],
+                correcta: 1,
+                explicacion: "A partir de aproximadamente los 50 años, las mujeres dejan de producir óvulos maduros y se interrumpe la menstruación. Es la menopausia."
+            },
+            {
+                pregunta: "¿Cómo se llama el periodo en que se interrumpe la menstruación?",
+                opciones: [
+                    "La pubertad",
+                    "La menopausia",
+                    "La ovulación",
+                    "La fecundación"
+                ],
+                correcta: 1,
+                explicacion: "Es la menopausia."
+            },
+            {
+                pregunta: "¿Dónde se forman los espermatozoides?",
+                opciones: [
+                    "En la próstata",
+                    "En los testículos",
+                    "En la uretra",
+                    "En los conductos deferentes"
+                ],
+                correcta: 1,
+                explicacion: "Los espermatozoides se forman en los testículos."
+            },
+            {
+                pregunta: "¿Cómo son los espermatozoides?",
+                opciones: [
+                    "Son grandes y redondos",
+                    "Son muy pequeños y tienen una cabeza y una cola larga que utilizan para desplazarse",
+                    "Son medianos y cuadrados",
+                    "Son grandes y alargados"
+                ],
+                correcta: 1,
+                explicacion: "Los espermatozoides son muy pequeños y tienen una cabeza y una cola larga que utilizan para desplazarse."
+            },
+            {
+                pregunta: "¿Para qué utilizan los espermatozoides su cola larga?",
+                opciones: [
+                    "Para almacenar alimento",
+                    "Para desplazarse",
+                    "Para protegerse",
+                    "Para crecer"
+                ],
+                correcta: 1,
+                explicacion: "Tienen una cabeza y una cola larga que utilizan para desplazarse."
+            },
+            {
+                pregunta: "¿Cuándo se forman los espermatozoides continuamente?",
+                opciones: [
+                    "Desde el nacimiento",
+                    "A partir de la pubertad",
+                    "A partir de los 5 años",
+                    "A partir de los 25 años"
+                ],
+                correcta: 1,
+                explicacion: "A partir de la pubertad los espermatozoides se forman continuamente en los testículos."
+            },
+            {
+                pregunta: "¿A dónde se dirigen los espermatozoides desde los testículos?",
+                opciones: [
+                    "A la próstata",
+                    "A los conductos deferentes",
+                    "Al pene",
+                    "A la uretra directamente"
+                ],
+                correcta: 1,
+                explicacion: "Desde los testículos, se dirigen a los conductos deferentes."
+            },
+            {
+                pregunta: "¿Qué forman los espermatozoides junto con el líquido de la próstata?",
+                opciones: [
+                    "La orina",
+                    "El semen",
+                    "La sangre",
+                    "El óvulo"
+                ],
+                correcta: 1,
+                explicacion: "Después, junto con el líquido de la próstata, los espermatozoides forman el semen, que llega a la uretra."
+            },
+            {
+                pregunta: "¿A dónde llega el semen?",
+                opciones: [
+                    "A los testículos",
+                    "A la uretra",
+                    "A los conductos deferentes",
+                    "A la próstata"
+                ],
+                correcta: 1,
+                explicacion: "El semen llega a la uretra."
+            },
+            {
+                pregunta: "¿Cómo se expulsa el semen por el pene?",
+                opciones: [
+                    "En la menstruación",
+                    "En la eyaculación",
+                    "En la ovulación",
+                    "En la fecundación"
+                ],
+                correcta: 1,
+                explicacion: "El semen se expulsa por el pene en la eyaculación."
+            },
+            {
+                pregunta: "¿Cuántos espermatozoides se liberan en cada eyaculación?",
+                opciones: [
+                    "Cientos",
+                    "Millones",
+                    "Miles",
+                    "Decenas"
+                ],
+                correcta: 1,
+                explicacion: "En cada eyaculación se liberan millones de espermatozoides."
+            },
+            {
+                pregunta: "¿Cómo se llama la unión de un óvulo con un espermatozoide?",
+                opciones: [
+                    "Menstruación",
+                    "Fecundación",
+                    "Ovulación",
+                    "Eyaculación"
+                ],
+                correcta: 1,
+                explicacion: "La unión de un óvulo con un espermatozoide se llama fecundación."
+            },
+            {
+                pregunta: "¿Qué da lugar la unión del óvulo con el espermatozoide?",
+                opciones: [
+                    "A una célula especial",
+                    "A una nueva célula, el cigoto",
+                    "A un órgano",
+                    "A un tejido"
+                ],
+                correcta: 1,
+                explicacion: "Esta unión da lugar a una nueva célula, el cigoto, a partir de la cual se desarrolla un nuevo ser humano."
+            },
+            {
+                pregunta: "¿Qué se desarrolla a partir del cigoto?",
+                opciones: [
+                    "Un óvulo",
+                    "Un nuevo ser humano",
+                    "Un espermatozoide",
+                    "Una trompa"
+                ],
+                correcta: 1,
+                explicacion: "A partir del cigoto se desarrolla un nuevo ser humano."
+            },
+            {
+                pregunta: "¿Qué tipo de fecundación tenemos los seres humanos?",
+                opciones: [
+                    "Fecundación externa",
+                    "Fecundación interna",
+                    "Fecundación mixta",
+                    "Fecundación superficial"
+                ],
+                correcta: 1,
+                explicacion: "Los seres humanos tenemos fecundación interna."
+            },
+            {
+                pregunta: "¿Dónde se produce el encuentro del óvulo y el espermatozoide?",
+                opciones: [
+                    "En el ovario",
+                    "En el interior del cuerpo de la mujer",
+                    "Fuera del cuerpo",
+                    "En el útero siempre"
+                ],
+                correcta: 1,
+                explicacion: "Por consiguiente, el encuentro del óvulo y el espermatozoide se produce en el interior del cuerpo de la mujer."
+            },
+            {
+                pregunta: "¿Qué es necesario para que los espermatozoides se depositen en la vagina?",
+                opciones: [
+                    "La menstruación",
+                    "La unión sexual del hombre con la mujer, que se llama coito",
+                    "La ovulación",
+                    "La pubertad"
+                ],
+                correcta: 1,
+                explicacion: "Para ello, es necesario que los espermatozoides se depositen en la vagina. Esto se consigue mediante la unión sexual del hombre con la mujer, que se llama coito."
+            },
+            {
+                pregunta: "¿Cómo se llama la unión sexual del hombre con la mujer?",
+                opciones: [
+                    "Menstruación",
+                    "Coito",
+                    "Ovulación",
+                    "Menopausia"
+                ],
+                correcta: 1,
+                explicacion: "La unión sexual del hombre con la mujer se llama coito."
+            },
+            {
+                pregunta: "¿Dónde se encuentran los espermatozoides con el óvulo maduro?",
+                opciones: [
+                    "En el ovario",
+                    "En la trompa de Falopio",
+                    "En la vagina",
+                    "En el útero"
+                ],
+                correcta: 1,
+                explicacion: "Los espermatozoides se encuentran con el óvulo maduro en la trompa de Falopio."
+            },
+            {
+                pregunta: "¿Cuántos espermatozoides penetran en el óvulo?",
+                opciones: [
+                    "Todos",
+                    "Por lo general, solo uno de ellos",
+                    "Dos",
+                    "Ninguno"
+                ],
+                correcta: 1,
+                explicacion: "Por lo general, solo uno de ellos penetra en el óvulo y se produce la fecundación."
+            },
+            {
+                pregunta: "Tras la fecundación, ¿qué se forma?",
+                opciones: [
+                    "Un óvulo nuevo",
+                    "El cigoto, la primera célula del nuevo ser",
+                    "Un espermatozoide",
+                    "Una trompa"
+                ],
+                correcta: 1,
+                explicacion: "Tras la fecundación se forma el cigoto, la primera célula del nuevo ser."
+            },
+            {
+                pregunta: "¿Qué le ocurre al cigoto después de formarse?",
+                opciones: [
+                    "Desaparece",
+                    "Se divide en dos y luego en cuatro, y continúa dividiéndose formando el embrión",
+                    "Se queda sin cambios",
+                    "Se convierte directamente en bebé"
+                ],
+                correcta: 1,
+                explicacion: "Esta (el cigoto) se divide en dos y luego en cuatro, y continúa dividiéndose formando el embrión, una masa redondeada de células."
+            },
+            {
+                pregunta: "¿Qué es el embrión?",
+                opciones: [
+                    "Una célula única",
+                    "Una masa redondeada de células",
+                    "Un órgano adulto",
+                    "Un espermatozoide"
+                ],
+                correcta: 1,
+                explicacion: "El embrión es una masa redondeada de células."
+            },
+            {
+                pregunta: "¿Qué hace el embrión después de formarse?",
+                opciones: [
+                    "Sale del cuerpo",
+                    "Recorre las trompas y unos días después llega al útero",
+                    "Se queda en el ovario",
+                    "Va a la vagina"
+                ],
+                correcta: 1,
+                explicacion: "El embrión recorre las trompas y unos días después llega al útero."
+            },
+            {
+                pregunta: "¿Qué hace el embrión cuando llega al útero?",
+                opciones: [
+                    "Sale al exterior",
+                    "Se adhiere a su pared y continúa creciendo y desarrollándose",
+                    "Vuelve al ovario",
+                    "Se detiene"
+                ],
+                correcta: 1,
+                explicacion: "Allí (en el útero), se adhiere a su pared y continúa creciendo y desarrollándose hasta transformarse en un bebé."
+            },
+            {
+                pregunta: "¿Hasta qué se transforma el embrión?",
+                opciones: [
+                    "Hasta un óvulo",
+                    "Hasta un bebé",
+                    "Hasta un espermatozoide",
+                    "Hasta una célula"
+                ],
+                correcta: 1,
+                explicacion: "El embrión continúa creciendo y desarrollándose hasta transformarse en un bebé."
+            }
+        ];
+
+        const preguntasUnidad3 = [
+            {
+                pregunta: "¿Dónde se desarrolla un nuevo ser humano a partir de la fecundación?",
+                opciones: [
+                    "En el ovario",
+                    "Dentro del útero de la mujer",
+                    "En la trompa de Falopio",
+                    "En la vagina"
+                ],
+                correcta: 1,
+                explicacion: "A partir de la fecundación, se desarrolla un nuevo ser humano dentro del útero de la mujer."
+            },
+            {
+                pregunta: "¿Qué es el embarazo?",
+                opciones: [
+                    "Es el periodo desde el nacimiento hasta los primeros meses",
+                    "Es el periodo de tiempo que transcurre desde la fecundación hasta el nacimiento",
+                    "Es el periodo de la lactancia",
+                    "Es el periodo de la pubertad"
+                ],
+                correcta: 1,
+                explicacion: "El embarazo es el periodo de tiempo que transcurre desde la fecundación hasta el nacimiento."
+            },
+            {
+                pregunta: "¿Cuánto dura el embarazo?",
+                opciones: [
+                    "Seis meses",
+                    "Nueve meses",
+                    "Doce meses",
+                    "Siete meses"
+                ],
+                correcta: 1,
+                explicacion: "El embarazo dura nueve meses."
+            },
+            {
+                pregunta: "¿Qué hace el útero durante el embarazo?",
+                opciones: [
+                    "Se contrae",
+                    "Nutre y protege al embrión que crece en su interior",
+                    "Produce óvulos",
+                    "Se reduce de tamaño"
+                ],
+                correcta: 1,
+                explicacion: "Durante estos (nueve meses), el útero nutre y protege al embrión que crece en su interior."
+            },
+            {
+                pregunta: "¿Qué se forma cuando el embrión se adhiere a la pared del útero?",
+                opciones: [
+                    "El cordón umbilical",
+                    "Un órgano llamado placenta",
+                    "La bolsa amniótica",
+                    "El líquido amniótico"
+                ],
+                correcta: 1,
+                explicacion: "Al adherirse el embrión a la pared del útero, se forma un órgano llamado placenta."
+            },
+            {
+                pregunta: "¿Qué proporciona la placenta al embrión?",
+                opciones: [
+                    "Solo protección",
+                    "Oxígeno y nutrientes",
+                    "Solo oxígeno",
+                    "Solo nutrientes"
+                ],
+                correcta: 1,
+                explicacion: "La placenta proporciona oxígeno y nutrientes al embrión."
+            },
+            {
+                pregunta: "¿Cómo se conecta la placenta con el embrión?",
+                opciones: [
+                    "Directamente sin conexión",
+                    "Mediante el cordón umbilical",
+                    "A través de la bolsa amniótica",
+                    "Por el líquido amniótico"
+                ],
+                correcta: 1,
+                explicacion: "La placenta se conecta con él (el embrión) mediante el cordón umbilical."
+            },
+            {
+                pregunta: "¿Dónde está el embrión dentro del útero?",
+                opciones: [
+                    "Flotando libremente",
+                    "Está en el interior de una bolsa llena de líquido que lo protege",
+                    "Pegado directamente a la pared del útero",
+                    "Fuera de la bolsa amniótica"
+                ],
+                correcta: 1,
+                explicacion: "Dentro del útero, el embrión está en el interior de una bolsa llena de líquido que lo protege."
+            },
+            {
+                pregunta: "¿Qué protege al embrión dentro del útero?",
+                opciones: [
+                    "Solo la placenta",
+                    "La bolsa y el líquido amniótico",
+                    "Solo el cordón umbilical",
+                    "Las paredes del útero solamente"
+                ],
+                correcta: 1,
+                explicacion: "Son la bolsa y el líquido amniótico."
+            },
+            {
+                pregunta: "¿Cuándo el embrión recibe el nombre de feto?",
+                opciones: [
+                    "Al mes",
+                    "A los tres meses",
+                    "A los seis meses",
+                    "Al nacer"
+                ],
+                correcta: 1,
+                explicacion: "A los tres meses el embrión recibe el nombre de feto."
+            },
+            {
+                pregunta: "¿Qué se puede distinguir del feto a los tres meses?",
+                opciones: [
+                    "Solo la cabeza",
+                    "Todas sus partes, como los brazos o los dedos",
+                    "Solo las piernas",
+                    "Solo el tronco"
+                ],
+                correcta: 1,
+                explicacion: "Ya se pueden distinguir todas sus partes, como los brazos o los dedos."
+            },
+            {
+                pregunta: "¿Qué es posible hacer a los tres meses con el feto?",
+                opciones: [
+                    "Ver su color de ojos",
+                    "Identificar los órganos",
+                    "Saber su peso exacto",
+                    "Medir su altura final"
+                ],
+                correcta: 1,
+                explicacion: "Es posible identificar los órganos."
+            },
+            {
+                pregunta: "¿Cuánto mide el feto a los nueve meses?",
+                opciones: [
+                    "Alrededor de 30 cm",
+                    "Alrededor de 50 cm",
+                    "Alrededor de 70 cm",
+                    "Alrededor de 40 cm"
+                ],
+                correcta: 1,
+                explicacion: "A los nueve meses mide alrededor de 50 cm."
+            },
+            {
+                pregunta: "¿Cuánto pesa el feto a los nueve meses?",
+                opciones: [
+                    "Unos 2 kg",
+                    "Unos 3 kg",
+                    "Unos 4 kg",
+                    "Unos 5 kg"
+                ],
+                correcta: 1,
+                explicacion: "Pesa unos 3 kg."
+            },
+            {
+                pregunta: "¿Cómo está el feto a los nueve meses?",
+                opciones: [
+                    "Aún no está listo",
+                    "Ya está preparado para nacer",
+                    "Necesita más tiempo",
+                    "Está en desarrollo inicial"
+                ],
+                correcta: 1,
+                explicacion: "Ya está preparado para nacer."
+            },
+            {
+                pregunta: "¿Qué le ocurre a la menstruación durante el embarazo?",
+                opciones: [
+                    "Continúa normal",
+                    "Se interrumpe",
+                    "Se hace más frecuente",
+                    "Se vuelve irregular"
+                ],
+                correcta: 1,
+                explicacion: "Durante estos nueve meses, el cuerpo de la mujer experimenta cambios: La menstruación se interrumpe."
+            },
+            {
+                pregunta: "¿Qué les ocurre a las mamas durante el embarazo?",
+                opciones: [
+                    "Se reducen",
+                    "Crecen y se preparan para alimentar al futuro bebé",
+                    "No cambian",
+                    "Desaparecen"
+                ],
+                correcta: 1,
+                explicacion: "Las mamas crecen y se preparan para alimentar al futuro bebé."
+            },
+            {
+                pregunta: "¿Por qué se abulta el abdomen durante el embarazo?",
+                opciones: [
+                    "Por acumulación de grasa",
+                    "Porque el feto al crecer ocupa cada vez más espacio",
+                    "Por retención de líquidos",
+                    "Por el crecimiento de los órganos"
+                ],
+                correcta: 1,
+                explicacion: "El abdomen se abulta porque el feto al crecer ocupa cada vez más espacio."
+            },
+            {
+                pregunta: "¿Qué es el parto?",
+                opciones: [
+                    "Es el inicio del embarazo",
+                    "Es la expulsión al exterior del feto y de la placenta a través de la vagina",
+                    "Es la formación de la placenta",
+                    "Es el crecimiento del feto"
+                ],
+                correcta: 1,
+                explicacion: "El parto es la expulsión al exterior del feto y de la placenta a través de la vagina."
+            },
+            {
+                pregunta: "¿Cuáles son las señales del inicio del parto?",
+                opciones: [
+                    "La formación de la placenta",
+                    "La rotura de la bolsa y la salida del líquido amniótico por la vagina",
+                    "El crecimiento del feto",
+                    "La menstruación"
+                ],
+                correcta: 1,
+                explicacion: "La rotura de la bolsa y la salida del líquido amniótico por la vagina es una de las señales del inicio del parto."
+            },
+            {
+                pregunta: "¿Qué se conoce como romper aguas?",
+                opciones: [
+                    "El inicio del embarazo",
+                    "La rotura de la bolsa y la salida del líquido amniótico",
+                    "El corte del cordón umbilical",
+                    "La expulsión de la placenta"
+                ],
+                correcta: 1,
+                explicacion: "Se conoce como romper aguas."
+            },
+            {
+                pregunta: "¿En cuántas fases sucede el parto?",
+                opciones: [
+                    "En dos fases",
+                    "En tres fases",
+                    "En cuatro fases",
+                    "En cinco fases"
+                ],
+                correcta: 1,
+                explicacion: "El parto sucede en tres fases."
+            },
+            {
+                pregunta: "¿Cuál es la primera fase del parto?",
+                opciones: [
+                    "Expulsión",
+                    "Dilatación",
+                    "Alumbramiento",
+                    "Lactancia"
+                ],
+                correcta: 1,
+                explicacion: "Dilatación. Es la primera fase del parto y la más larga."
+            },
+            {
+                pregunta: "¿Qué ocurre durante la dilatación?",
+                opciones: [
+                    "El bebé sale completamente",
+                    "El cuello del útero se dilata poco a poco para que el feto pueda salir",
+                    "Se corta el cordón umbilical",
+                    "Se expulsa la placenta"
+                ],
+                correcta: 1,
+                explicacion: "El cuello del útero se dilata poco a poco para que el feto pueda salir."
+            },
+            {
+                pregunta: "¿Qué más ocurre durante la dilatación además de la dilatación del cuello del útero?",
+                opciones: [
+                    "El feto deja de moverse",
+                    "Las paredes del útero se contraen para empujarlo hacia la vagina",
+                    "El feto crece más",
+                    "Se forma nueva placenta"
+                ],
+                correcta: 1,
+                explicacion: "Además, las paredes del útero se contraen para empujarlo hacia la vagina."
+            },
+            {
+                pregunta: "¿Cuál es la segunda fase del parto?",
+                opciones: [
+                    "Dilatación",
+                    "Expulsión",
+                    "Alumbramiento",
+                    "Lactancia"
+                ],
+                correcta: 1,
+                explicacion: "Expulsión."
+            },
+            {
+                pregunta: "¿Qué ocurre durante la expulsión?",
+                opciones: [
+                    "Se dilata el útero",
+                    "El útero y los músculos del abdomen de la madre empujan con fuerza para que el bebé salga al exterior",
+                    "Se forma la placenta",
+                    "Comienza la lactancia"
+                ],
+                correcta: 1,
+                explicacion: "El útero y los músculos del abdomen de la madre empujan con fuerza para que el bebé salga al exterior."
+            },
+            {
+                pregunta: "¿De dónde sale el feto durante la expulsión?",
+                opciones: [
+                    "Del ovario",
+                    "Sale del cuerpo de la madre y comienza a respirar",
+                    "De la trompa de Falopio",
+                    "Del abdomen directamente"
+                ],
+                correcta: 1,
+                explicacion: "El feto sale del cuerpo de la madre y comienza a respirar."
+            },
+            {
+                pregunta: "¿Qué se corta durante la expulsión?",
+                opciones: [
+                    "La placenta",
+                    "El cordón umbilical",
+                    "La bolsa amniótica",
+                    "Las trompas"
+                ],
+                correcta: 1,
+                explicacion: "El cordón umbilical se corta."
+            },
+            {
+                pregunta: "¿Cuál es la tercera fase del parto?",
+                opciones: [
+                    "Dilatación",
+                    "Alumbramiento",
+                    "Expulsión",
+                    "Lactancia"
+                ],
+                correcta: 1,
+                explicacion: "Alumbramiento."
+            },
+            {
+                pregunta: "¿Qué ocurre durante el alumbramiento?",
+                opciones: [
+                    "El bebé comienza a respirar",
+                    "Una vez que el bebé ya ha nacido, el útero continúa contrayéndose hasta que la placenta se desprende de su pared",
+                    "Se corta el cordón umbilical",
+                    "El útero se dilata"
+                ],
+                correcta: 1,
+                explicacion: "Una vez que el bebé ya ha nacido, el útero continúa contrayéndose hasta que la placenta se desprende de su pared."
+            },
+            {
+                pregunta: "¿Qué se expulsa al exterior junto con los restos del cordón umbilical?",
+                opciones: [
+                    "El líquido amniótico",
+                    "La placenta",
+                    "El feto",
+                    "La bolsa"
+                ],
+                correcta: 1,
+                explicacion: "Junto con los restos del cordón umbilical, se expulsa al exterior."
+            },
+            {
+                pregunta: "¿Qué es la lactancia?",
+                opciones: [
+                    "El periodo del embarazo",
+                    "Es cuando los primeros meses de vida los bebés se alimentan solo de leche",
+                    "El periodo del parto",
+                    "Es cuando el bebé empieza a comer alimentos sólidos"
+                ],
+                correcta: 1,
+                explicacion: "Los primeros meses de vida los bebés se alimentan solo de leche, esta etapa se llama lactancia."
+            },
+            {
+                pregunta: "¿Cuándo empiezan a producir leche las mamas de la madre?",
+                opciones: [
+                    "Durante la pubertad",
+                    "Después del parto",
+                    "Durante la fecundación",
+                    "Antes del embarazo"
+                ],
+                correcta: 1,
+                explicacion: "Después del parto, las mamas de la madre empiezan a producir leche."
+            },
+            {
+                pregunta: "¿Qué contiene la leche materna?",
+                opciones: [
+                    "Solo agua",
+                    "Todos los nutrientes que el bebé necesita",
+                    "Solo proteínas",
+                    "Solo vitaminas"
+                ],
+                correcta: 1,
+                explicacion: "La leche materna contiene todos los nutrientes que el bebé necesita."
+            },
+            {
+                pregunta: "¿Qué más contiene la leche materna además de nutrientes?",
+                opciones: [
+                    "Solo agua",
+                    "También defensas contra muchas enfermedades",
+                    "Solo azúcar",
+                    "Solo grasas"
+                ],
+                correcta: 1,
+                explicacion: "Y también defensas contra muchas enfermedades."
+            },
+            {
+                pregunta: "¿Qué se recomienda desde el ámbito médico?",
+                opciones: [
+                    "Alimentar al bebé solo con leche preparada",
+                    "Alimentar al bebé con leche materna",
+                    "No alimentar al bebé con leche",
+                    "Dar alimentos sólidos desde el inicio"
+                ],
+                correcta: 1,
+                explicacion: "Desde el ámbito médico se recomienda alimentar al bebé con leche materna."
+            },
+            {
+                pregunta: "¿Qué otra posibilidad existe además de la leche materna?",
+                opciones: [
+                    "No alimentar al bebé",
+                    "Alimentarlo con leche preparada especialmente para recién nacidos",
+                    "Solo darle agua",
+                    "Darle alimentos sólidos"
+                ],
+                correcta: 1,
+                explicacion: "Pero también existe la posibilidad de alimentarlo con leche preparada especialmente para recién nacidos."
+            }
+        ];
+
+        const preguntasUnidad4 = [
+            {
+                pregunta: "¿Con qué están relacionados los genitales externos femeninos y masculinos?",
+                opciones: [
+                    "Con el aparato digestivo",
+                    "Con el aparato urinario",
+                    "Con el aparato circulatorio",
+                    "Con el aparato respiratorio"
+                ],
+                correcta: 1,
+                explicacion: "Los genitales externos femeninos y masculinos están relacionados con el aparato urinario."
+            },
+            {
+                pregunta: "¿Por qué son muy necesarias las medidas higiénicas?",
+                opciones: [
+                    "Porque los genitales están relacionados con el aparato digestivo",
+                    "Porque los genitales están relacionados con el aparato urinario",
+                    "Porque los genitales están relacionados con el aparato circulatorio",
+                    "Porque los genitales son de color diferente"
+                ],
+                correcta: 1,
+                explicacion: "Por lo que las medidas higiénicas son muy necesarias."
+            },
+            {
+                pregunta: "¿Qué hay en los genitales externos que puede acumular restos de orina y suciedad?",
+                opciones: [
+                    "Huesos",
+                    "Repliegues de piel",
+                    "Músculos",
+                    "Nervios"
+                ],
+                correcta: 1,
+                explicacion: "En los genitales externos hay repliegues de piel en los que pueden acumularse restos de orina y suciedad."
+            },
+            {
+                pregunta: "¿Qué podría provocar la acumulación de restos de orina y suciedad?",
+                opciones: [
+                    "Mejora de la salud",
+                    "Irritaciones o favorecer el crecimiento de microorganismos",
+                    "Mayor fuerza muscular",
+                    "Crecimiento de huesos"
+                ],
+                correcta: 1,
+                explicacion: "Esto podría provocar irritaciones o favorecer el crecimiento de microorganismos."
+            },
+            {
+                pregunta: "¿Con qué es aconsejable el aseo diario?",
+                opciones: [
+                    "Con productos químicos fuertes",
+                    "Solo con agua, o con agua y jabón suave",
+                    "Con alcohol",
+                    "Con desinfectante"
+                ],
+                correcta: 1,
+                explicacion: "Es aconsejable el aseo diario solo con agua, o con agua y jabón suave."
+            },
+            {
+                pregunta: "Durante la menstruación, ¿qué es recomendable hacer?",
+                opciones: [
+                    "Reducir la higiene",
+                    "Aumentar la higiene",
+                    "No hacer nada diferente",
+                    "Dejar de lavarse"
+                ],
+                correcta: 1,
+                explicacion: "Durante la menstruación es recomendable aumentar la higiene."
+            },
+            {
+                pregunta: "Si se utilizan tampones, copas o compresas, ¿qué deben hacer?",
+                opciones: [
+                    "Usarse solo una vez al día",
+                    "Cambiarse con la frecuencia adecuada",
+                    "No cambiarse nunca",
+                    "Usarse solo de noche"
+                ],
+                correcta: 1,
+                explicacion: "Si se utilizan tampones, copas o compresas, deben cambiarse con la frecuencia adecuada."
+            },
+            {
+                pregunta: "En las mujeres, ¿cómo debe hacerse la limpieza de la zona del ano?",
+                opciones: [
+                    "De adelante hacia atrás",
+                    "Siempre arrastrando el papel hacia atrás",
+                    "De atrás hacia adelante",
+                    "No importa la dirección"
+                ],
+                correcta: 1,
+                explicacion: "En las mujeres, la limpieza de la zona del ano debe hacerse siempre arrastrando el papel hacia atrás."
+            },
+            {
+                pregunta: "¿Qué se evita al limpiar arrastrando el papel hacia atrás?",
+                opciones: [
+                    "El crecimiento de músculos",
+                    "Contaminar la zona de entrada de la vagina",
+                    "La producción de hormonas",
+                    "El desarrollo de huesos"
+                ],
+                correcta: 1,
+                explicacion: "Así se evita contaminar la zona de entrada de la vagina."
+            },
+            {
+                pregunta: "¿Qué tipo de ropa interior es conveniente utilizar?",
+                opciones: [
+                    "Ropa de plástico",
+                    "Ropa interior de tejidos naturales",
+                    "Ropa de metal",
+                    "Ropa sintética muy ajustada"
+                ],
+                correcta: 1,
+                explicacion: "Es conveniente utilizar ropa interior de tejidos naturales."
+            },
+            {
+                pregunta: "¿Qué favorecen la ropa muy ajustada y de tejidos sintéticos?",
+                opciones: [
+                    "La circulación sanguínea",
+                    "La humedad y el calor",
+                    "El crecimiento",
+                    "La digestión"
+                ],
+                correcta: 1,
+                explicacion: "La ropa muy ajustada y de tejidos sintéticos favorecen la humedad y el calor."
+            },
+            {
+                pregunta: "¿Qué crean la humedad y el calor?",
+                opciones: [
+                    "Condiciones malas para los microorganismos",
+                    "Las condiciones adecuadas para que crezcan microorganismos",
+                    "Un ambiente seco",
+                    "Temperatura baja"
+                ],
+                correcta: 1,
+                explicacion: "Esto crea las condiciones adecuadas para que crezcan microorganismos."
+            },
+            {
+                pregunta: "¿Qué debe hacerse siempre que haya alguna molestia, dolor o irritación en la zona de los genitales?",
+                opciones: [
+                    "Ignorarlo",
+                    "Consultar a un profesional",
+                    "Esperar varios meses",
+                    "Aplicar cualquier crema"
+                ],
+                correcta: 1,
+                explicacion: "Siempre que haya alguna molestia, dolor o irritación en la zona de los genitales, se debe consultar a un profesional."
+            },
+            {
+                pregunta: "¿Cómo se denomina la especialidad médica que se ocupa del cuidado del aparato reproductor femenino?",
+                opciones: [
+                    "Urología",
+                    "Ginecología",
+                    "Cardiología",
+                    "Dermatología"
+                ],
+                correcta: 1,
+                explicacion: "La especialidad médica que se ocupa del cuidado del aparato reproductor femenino se denomina ginecología."
+            },
+            {
+                pregunta: "¿Cómo se denomina la especialidad médica del aparato reproductor masculino?",
+                opciones: [
+                    "Ginecología",
+                    "Urología",
+                    "Neurología",
+                    "Pediatría"
+                ],
+                correcta: 1,
+                explicacion: "La del aparato reproductor masculino, urología."
+            },
+            {
+                pregunta: "¿Para qué son imprescindibles las revisiones periódicas?",
+                opciones: [
+                    "Para aumentar de peso",
+                    "Para detectar a tiempo algunas enfermedades",
+                    "Para cambiar de color de pelo",
+                    "Para crecer más alto"
+                ],
+                correcta: 1,
+                explicacion: "Las revisiones periódicas son imprescindibles para detectar a tiempo algunas enfermedades."
+            },
+            {
+                pregunta: "¿Qué enfermedad puede aparecer en las mujeres?",
+                opciones: [
+                    "Cáncer de próstata",
+                    "Cáncer de mama",
+                    "Cáncer de pulmón",
+                    "Cáncer de hígado"
+                ],
+                correcta: 1,
+                explicacion: "Como el cáncer de mama, que puede aparecer en las mujeres."
+            },
+            {
+                pregunta: "¿Qué enfermedad afecta a los hombres?",
+                opciones: [
+                    "Cáncer de mama",
+                    "Cáncer de próstata",
+                    "Cáncer de útero",
+                    "Cáncer de ovarios"
+                ],
+                correcta: 1,
+                explicacion: "Y el cáncer de próstata, que afecta a los hombres."
+            },
+            {
+                pregunta: "¿Qué es la adolescencia?",
+                opciones: [
+                    "La etapa de la vejez",
+                    "La etapa de la vida comprendida entre la infancia y la edad adulta",
+                    "La etapa del nacimiento",
+                    "La etapa de la niñez"
+                ],
+                correcta: 1,
+                explicacion: "La adolescencia es la etapa de la vida comprendida entre la infancia y la edad adulta."
+            },
+            {
+                pregunta: "¿Entre qué edades transcurre la adolescencia?",
+                opciones: [
+                    "Entre los 5 y los 10 años",
+                    "Entre los 10 y los 19 años",
+                    "Entre los 20 y los 30 años",
+                    "Entre los 0 y los 5 años"
+                ],
+                correcta: 1,
+                explicacion: "Y transcurre entre los 10 y los 19 años."
+            },
+            {
+                pregunta: "¿Qué tipo de cambios se producen durante la adolescencia?",
+                opciones: [
+                    "Solo cambios físicos",
+                    "Cambios físicos, pero también cambios que afectan a nuestra forma de ser, de sentirnos y de relacionarnos",
+                    "Solo cambios emocionales",
+                    "Ningún cambio"
+                ],
+                correcta: 1,
+                explicacion: "Durante este periodo se producen cambios físicos, pero también cambios que afectan a nuestra forma de ser, de sentirnos y de relacionarnos."
+            },
+            {
+                pregunta: "¿A qué edad concreta suceden los cambios en la adolescencia?",
+                opciones: [
+                    "A los 10 años exactamente",
+                    "No suceden a una edad concreta",
+                    "A los 15 años exactamente",
+                    "A los 19 años exactamente"
+                ],
+                correcta: 1,
+                explicacion: "Los cambios en la adolescencia no suceden a una edad concreta."
+            },
+            {
+                pregunta: "¿Cuándo experimentan los cambios algunas personas?",
+                opciones: [
+                    "Todas al mismo tiempo",
+                    "Algunas personas los experimentan antes, mientras que en otras se producen más tarde",
+                    "Todas a los 15 años",
+                    "Nunca"
+                ],
+                correcta: 1,
+                explicacion: "Algunas personas los experimentan antes, mientras que en otras se producen más tarde."
+            },
+            {
+                pregunta: "¿Debe preocuparnos o hacernos sentir diferentes el ritmo de cambio?",
+                opciones: [
+                    "Sí, mucho",
+                    "No",
+                    "Solo a veces",
+                    "Siempre"
+                ],
+                correcta: 1,
+                explicacion: "Esto no debe preocuparnos ni hacernos sentir diferentes."
+            },
+            {
+                pregunta: "¿Qué tiene cada persona?",
+                opciones: [
+                    "El mismo ritmo que los demás",
+                    "Su propio ritmo de cambio",
+                    "No tiene ritmo de cambio",
+                    "Un ritmo muy rápido"
+                ],
+                correcta: 1,
+                explicacion: "Cada persona tiene su propio ritmo de cambio."
+            },
+            {
+                pregunta: "¿Cuándo algunas personas se inician en las relaciones sexuales?",
+                opciones: [
+                    "En la niñez",
+                    "A lo largo de la adolescencia",
+                    "En la vejez",
+                    "Al nacer"
+                ],
+                correcta: 1,
+                explicacion: "A lo largo de la adolescencia algunas personas se inician en las relaciones sexuales."
+            },
+            {
+                pregunta: "¿En qué deben estar basadas las relaciones sexuales para que sean saludables?",
+                opciones: [
+                    "En la obligación",
+                    "En el respeto a la otra persona y a sus decisiones, en la confianza mutua y en la posibilidad de expresar siempre con libertad cómo nos sentimos",
+                    "En la presión",
+                    "En el miedo"
+                ],
+                correcta: 1,
+                explicacion: "Para que sean saludables, deben estar basadas en el respeto a la otra persona y a sus decisiones, en la confianza mutua y en la posibilidad de expresar siempre con libertad cómo nos sentimos."
+            },
+            {
+                pregunta: "¿De qué es muy importante informarse para evitar un embarazo no deseado?",
+                opciones: [
+                    "De los deportes",
+                    "De los medios que existen",
+                    "De las películas",
+                    "De la comida"
+                ],
+                correcta: 1,
+                explicacion: "También es muy importante informarse de los medios que existen para evitar un embarazo no deseado."
+            },
+            {
+                pregunta: "¿Qué adquieren mucha importancia en la adolescencia?",
+                opciones: [
+                    "Los juguetes",
+                    "Las amistades",
+                    "Los estudios solamente",
+                    "La comida"
+                ],
+                correcta: 1,
+                explicacion: "En la adolescencia las amistades adquieren mucha importancia y nos apoyamos en ellas."
+            },
+            {
+                pregunta: "¿Qué debemos hacer si tenemos dudas en la adolescencia?",
+                opciones: [
+                    "No preguntar a nadie",
+                    "Preguntar a los adultos en los que confiemos",
+                    "Ignorar las dudas",
+                    "Inventar las respuestas"
+                ],
+                correcta: 1,
+                explicacion: "Sin embargo, hay dudas que debemos preguntar a los adultos en los que confiemos, ya que disponen de más conocimientos para resolverlas."
+            },
+            {
+                pregunta: "¿Qué podemos notar en esta etapa respecto al humor y sentimientos?",
+                opciones: [
+                    "Estar siempre alegres",
+                    "Cambios de humor y sentimos más irritables, incomprendidos, tristes o alegres",
+                    "No tener emociones",
+                    "Estar siempre tristes"
+                ],
+                correcta: 1,
+                explicacion: "En esta etapa podemos notar cambios de humor y sentimos más irritables, incomprendidos, tristes o alegres."
+            },
+            {
+                pregunta: "¿Qué es importante que aprendamos a hacer con nuestras emociones?",
+                opciones: [
+                    "Esconderlas",
+                    "Conocernos y a controlar, identificar y gestionar nuestras emociones",
+                    "Ignorarlas",
+                    "Reprimirlas"
+                ],
+                correcta: 1,
+                explicacion: "Es importante que aprendamos a conocernos y a controlar, identificar y gestionar nuestras emociones."
+            },
+            {
+                pregunta: "¿Qué construimos poco a poco con la capacidad de razonar?",
+                opciones: [
+                    "Nuestro cuerpo",
+                    "Nuestra personalidad",
+                    "Nuestros músculos",
+                    "Nuestros huesos"
+                ],
+                correcta: 1,
+                explicacion: "La capacidad de razonar madura y poco a poco construimos nuestra personalidad."
+            },
+            {
+                pregunta: "¿Cómo se transmiten algunas enfermedades debidas a microorganismos?",
+                opciones: [
+                    "Por el aire",
+                    "Por contacto sexual",
+                    "Por la comida",
+                    "Por el agua"
+                ],
+                correcta: 1,
+                explicacion: "Algunas enfermedades debidas a microorganismos se transmiten por contacto sexual."
+            },
+            {
+                pregunta: "¿Qué hay que hacer cuando se inician las relaciones sexuales?",
+                opciones: [
+                    "No hacer nada",
+                    "Informarse y adoptar medidas para protegerse",
+                    "Esperar a enfermarse",
+                    "Ignorar los riesgos"
+                ],
+                correcta: 1,
+                explicacion: "Por esta razón, cuando se inician las relaciones sexuales hay que informarse y adoptar medidas para protegerse."
+            }
+        ];
+
+        let preguntas = [];
+        let preguntaActual = 0;
+        let puntuacion = 0;
+        let preguntasAleatorias = [];
+        let unidadSeleccionada = 0;
+
+        function seleccionarUnidad(unidad) {
+            unidadSeleccionada = unidad;
+            if (unidad === 1) {
+                preguntas = [...preguntasUnidad1];
+            } else if (unidad === 2) {
+                preguntas = [...preguntasUnidad2];
+            } else if (unidad === 3) {
+                preguntas = [...preguntasUnidad3];
+            } else if (unidad === 4) {
+                preguntas = [...preguntasUnidad4];
+            }
+            iniciarJuego();
+        }
+
+        function iniciarJuego() {
+            document.getElementById('inicio').style.display = 'none';
+            document.getElementById('juego').style.display = 'block';
+            document.getElementById('resultado').style.display = 'none';
+            preguntaActual = 0;
+            puntuacion = 0;
+            
+            // No mezclar preguntas, mantener el orden original
+            preguntasAleatorias = [...preguntas];
+            
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            if (preguntaActual >= preguntasAleatorias.length) {
+                mostrarResultado();
+                return;
+            }
+
+            const pregunta = preguntasAleatorias[preguntaActual];
+            const container = document.getElementById('pregunta-actual');
+            
+            document.getElementById('progreso').textContent = 
+                `Pregunta ${preguntaActual + 1} de ${preguntasAleatorias.length}`;
+            
+            let html = `<h2>${pregunta.pregunta}</h2>
+                       <button class="btn btn-listo" onclick="mostrarOpciones()">👁️ Mostrar Respuestas (Listo)</button>
+                       <div class="opciones ocultas" id="opciones-container">`;
+            
+            pregunta.opciones.forEach((opcion, index) => {
+                html += `<div class="opcion" data-index="${index}">${opcion}</div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            document.getElementById('btn-siguiente').style.display = 'none';
+            document.getElementById('feedback').classList.remove('visible');
+        }
+
+        function mostrarOpciones() {
+            const opcionesContainer = document.getElementById('opciones-container');
+            opcionesContainer.classList.remove('ocultas');
+            
+            // Ahora activar los clicks en las opciones
+            const opciones = opcionesContainer.querySelectorAll('.opcion');
+            opciones.forEach(opcion => {
+                opcion.onclick = function() {
+                    seleccionarOpcion(parseInt(this.getAttribute('data-index')));
+                };
+            });
+            
+            // Ocultar el botón "Listo" después de usarlo
+            event.target.style.display = 'none';
+        }
+
+        function seleccionarOpcion(index) {
+            const pregunta = preguntasAleatorias[preguntaActual];
+            const opciones = document.querySelectorAll('.opcion');
+            
+            // Deshabilitar todas las opciones
+            opciones.forEach(opcion => {
+                opcion.classList.add('deshabilitada');
+                opcion.onclick = null;
+            });
+            
+            // Marcar respuesta seleccionada
+            if (index === pregunta.correcta) {
+                opciones[index].classList.add('correcta');
+                puntuacion++;
+                document.getElementById('feedback').innerHTML = 
+                    `<strong>✅ ¡Correcto!</strong><br>${pregunta.explicacion}`;
+            } else {
+                opciones[index].classList.add('incorrecta');
+                opciones[pregunta.correcta].classList.add('correcta');
+                document.getElementById('feedback').innerHTML = 
+                    `<strong>❌ Incorrecto.</strong><br>${pregunta.explicacion}`;
+            }
+            
+            document.getElementById('feedback').classList.add('visible');
+            document.getElementById('btn-siguiente').style.display = 'block';
+        }
+
+        function siguientePregunta() {
+            preguntaActual++;
+            mostrarPregunta();
+        }
+
+        function mostrarResultado() {
+            document.getElementById('juego').style.display = 'none';
+            document.getElementById('resultado').style.display = 'block';
+            
+            const porcentaje = Math.round((puntuacion / preguntasAleatorias.length) * 100);
+            document.getElementById('puntuacion-final').textContent = 
+                `${puntuacion} / ${preguntasAleatorias.length} (${porcentaje}%)`;
+            
+            let mensaje = '';
+            if (porcentaje === 100) {
+                mensaje = '¡Perfecto! 🌟 ¡Dominas completamente el tema!';
+            } else if (porcentaje >= 80) {
+                mensaje = '¡Excelente! 🎉 Tienes muy buenos conocimientos.';
+            } else if (porcentaje >= 60) {
+                mensaje = '¡Bien! 👍 Vas por buen camino, sigue repasando.';
+            } else {
+                mensaje = '¡Ánimo! 💪 Repasa el material y vuelve a intentarlo.';
+            }
+            
+            document.getElementById('mensaje-final').textContent = mensaje;
+        }
+
+        function volverAlInicio() {
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('juego').style.display = 'none';
+            document.getElementById('inicio').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
