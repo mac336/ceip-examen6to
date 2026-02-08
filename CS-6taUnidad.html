@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Historia de España (1808-1874)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .inicio {
+            text-align: center;
+        }
+        
+        .inicio button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            margin: 15px auto;
+        }
+        
+        .inicio button:hover {
+            transform: scale(1.05);
+        }
+        
+        .pregunta-container {
+            display: none;
+        }
+        
+        .pregunta {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .pregunta h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .opcion {
+            background: white;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+        
+        .opcion:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .opciones.ocultas .opcion {
+            background: #9e9e9e;
+            color: #9e9e9e;
+            user-select: none;
+            border-color: #9e9e9e;
+            cursor: default;
+        }
+        
+        .opciones.ocultas .opcion:hover {
+            transform: none;
+            border-color: #9e9e9e;
+        }
+        
+        .opcion.correcta {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        
+        .opcion.incorrecta {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+        
+        .opcion.deshabilitada {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .botones {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .btn-siguiente {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-siguiente:hover {
+            background: #5568d3;
+        }
+        
+        .btn-listo {
+            background: #ff9800;
+            color: white;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .btn-listo:hover {
+            background: #f57c00;
+        }
+        
+        .btn-reiniciar {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-reiniciar:hover {
+            background: #633d8a;
+        }
+        
+        .progreso {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .resultado {
+            display: none;
+            text-align: center;
+        }
+        
+        .resultado h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        .puntuacion {
+            font-size: 3em;
+            color: #764ba2;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .mensaje {
+            font-size: 1.2em;
+            color: #555;
+            margin: 20px 0;
+        }
+        
+        .feedback {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .feedback.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Quiz - Historia de España</h1>
+        
+        <div class="inicio" id="inicio">
+            <p style="font-size: 1.2em; margin-bottom: 30px; color: #555;">
+                Elige qué tema quieres repasar:
+            </p>
+            <button onclick="seleccionarUnidad(1)">🏛️ Tema 1: Así empezó la Edad Contemporánea</button>
+            <button onclick="seleccionarUnidad(2)">📜 Tema 2: La Constitución de 1812</button>
+            <button onclick="seleccionarUnidad(3)">👑 Tema 3: Las Tres Etapas del Gobierno</button>
+            <button onclick="seleccionarUnidad(4)">👸 Tema 4: Isabel II</button>
+            <button onclick="seleccionarUnidad(5)">🏭 Tema 5: La Revolución Industrial</button>
+            <button onclick="seleccionarUnidad(6)">👥 Tema 6: Una nueva sociedad</button>
+            <button onclick="seleccionarUnidad(7)">🎨 Tema 7: Nuevas formas de cultura</button>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 15px;">
+                <label style="display: flex; align-items: center; cursor: pointer; font-size: 1.1em;">
+                    <input type="checkbox" id="ocultarRespuestas" checked style="width: 20px; height: 20px; margin-right: 10px; cursor: pointer;">
+                    <span>Ocultar las respuestas para decirlas de memoria</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="pregunta-container" id="juego">
+            <div class="progreso" id="progreso"></div>
+            <div class="pregunta" id="pregunta-actual"></div>
+            <div class="feedback" id="feedback"></div>
+            <div class="botones">
+                <button class="btn btn-reiniciar" onclick="volverAlInicio()">🔄 Volver al Menú</button>
+                <button class="btn btn-siguiente" id="btn-siguiente" onclick="siguientePregunta()" style="display: none;">
+                    Siguiente ➡️
+                </button>
+            </div>
+        </div>
+        
+        <div class="resultado" id="resultado">
+            <h2>🎉 ¡Quiz Completado!</h2>
+            <div class="puntuacion" id="puntuacion-final"></div>
+            <div class="mensaje" id="mensaje-final"></div>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+                <button class="btn btn-reiniciar" onclick="volverAlInicio()">🔄 Volver al Menú</button>
+                <button class="btn btn-siguiente" id="btn-repetir-falladas" onclick="repetirFalladas()" style="display: none;">
+                    🎯 Repetir Preguntas Falladas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const preguntasUnidad1 = [
+            {
+                pregunta: "¿En qué siglo finalizó cuando comenzó la Edad Contemporánea?",
+                opciones: [
+                    "Siglo XVII",
+                    "A finales del siglo XVIII",
+                    "Siglo XIX",
+                    "Siglo XX"
+                ],
+                correcta: 1,
+                explicacion: "La Edad Contemporánea comenzó a finales del siglo XVIII."
+            },
+            {
+                pregunta: "¿Quién gobernaba Francia a finales del siglo XVIII?",
+                opciones: [
+                    "Napoleón Bonaparte",
+                    "Luis XVI",
+                    "Carlos IV",
+                    "Fernando VII"
+                ],
+                correcta: 1,
+                explicacion: "Luis XVI gobernaba Francia a finales del siglo XVIII."
+            },
+            {
+                pregunta: "¿Qué tipo de rey era Luis XVI?",
+                opciones: [
+                    "Democrático",
+                    "Absolutista",
+                    "Constitucional",
+                    "Liberal"
+                ],
+                correcta: 1,
+                explicacion: "Luis XVI era un rey absolutista."
+            },
+            {
+                pregunta: "¿Por qué estaba descontenta la población francesa?",
+                opciones: [
+                    "Por la guerra",
+                    "Porque pensaban que los reyes no podían gobernar a su antojo y que los seres humanos tenemos derechos",
+                    "Por los impuestos",
+                    "Por el hambre"
+                ],
+                correcta: 1,
+                explicacion: "La población estaba descontenta porque pensaba que los reyes no podían gobernar a su antojo, que los seres humanos tenemos derechos y que la ciudadanía debía elegir a sus dirigentes."
+            },
+            {
+                pregunta: "¿En qué año se rebelaron los descontentos en Francia?",
+                opciones: [
+                    "1789",
+                    "1799",
+                    "1804",
+                    "1807"
+                ],
+                correcta: 0,
+                explicacion: "En 1789 los descontentos se rebelaron contra el rey."
+            },
+            {
+                pregunta: "¿Qué le ocurrió al rey Luis XVI?",
+                opciones: [
+                    "Huyó del país",
+                    "Fue derrotado, llevado a prisión y ajusticiado",
+                    "Abdicó voluntariamente",
+                    "Continuó gobernando"
+                ],
+                correcta: 1,
+                explicacion: "El rey fue derrotado, llevado a prisión y ajusticiado."
+            },
+            {
+                pregunta: "¿Cómo se llama el acontecimiento que se considera el inicio de la Edad Contemporánea?",
+                opciones: [
+                    "La Guerra de la Independencia",
+                    "La Revolución francesa",
+                    "El Imperio de Napoleón",
+                    "La Constitución de 1812"
+                ],
+                correcta: 1,
+                explicacion: "La Revolución francesa se considera el inicio de la Edad Contemporánea."
+            },
+            {
+                pregunta: "¿Qué cambió la Revolución francesa?",
+                opciones: [
+                    "Solo el rey",
+                    "La forma de gobierno",
+                    "Solo las fronteras",
+                    "La religión"
+                ],
+                correcta: 1,
+                explicacion: "La revolución cambió la forma de gobierno."
+            },
+            {
+                pregunta: "¿Qué sistema político crearon después de la Revolución francesa?",
+                opciones: [
+                    "Absolutista",
+                    "Liberal",
+                    "Feudal",
+                    "Comunista"
+                ],
+                correcta: 1,
+                explicacion: "Crearon un sistema político liberal."
+            },
+            {
+                pregunta: "¿Qué sistema abolieron durante la Revolución francesa?",
+                opciones: [
+                    "El sistema republicano",
+                    "El sistema feudal",
+                    "El sistema democrático",
+                    "El sistema parlamentario"
+                ],
+                correcta: 1,
+                explicacion: "Abolieron el sistema feudal."
+            },
+            {
+                pregunta: "¿Qué se declaró al abolir el sistema feudal?",
+                opciones: [
+                    "La guerra",
+                    "La igualdad de las personas y que nadie debía ser siervo de otros",
+                    "La república",
+                    "El fin de la monarquía"
+                ],
+                correcta: 1,
+                explicacion: "Se declaró la igualdad de las personas y que nadie debía ser siervo de otros."
+            },
+            {
+                pregunta: "¿Qué redactaron para los ciudadanos durante la Revolución francesa?",
+                opciones: [
+                    "Un código civil",
+                    "Una declaración de derechos",
+                    "Un tratado de paz",
+                    "Una ley de impuestos"
+                ],
+                correcta: 1,
+                explicacion: "Redactaron una declaración de derechos para los ciudadanos."
+            },
+            {
+                pregunta: "¿Qué elaboraron para establecer dónde estaba el poder?",
+                opciones: [
+                    "Un decreto",
+                    "Una constitución",
+                    "Una ley",
+                    "Un edicto"
+                ],
+                correcta: 1,
+                explicacion: "Elaboraron una constitución."
+            },
+            {
+                pregunta: "Según la constitución de la Revolución francesa, ¿en manos de quién estaba el poder?",
+                opciones: [
+                    "Del rey",
+                    "De los ciudadanos",
+                    "De la nobleza",
+                    "De la iglesia"
+                ],
+                correcta: 1,
+                explicacion: "El poder estaba en manos de los ciudadanos."
+            },
+            {
+                pregunta: "¿Cómo ejercían el poder los ciudadanos?",
+                opciones: [
+                    "Directamente",
+                    "Lo delegaban en gobernantes elegidos por ellos",
+                    "A través del rey",
+                    "No lo ejercían"
+                ],
+                correcta: 1,
+                explicacion: "Los ciudadanos delegaban el poder en gobernantes elegidos por ellos."
+            },
+            {
+                pregunta: "¿Qué derecho se estableció en la constitución francesa?",
+                opciones: [
+                    "Derecho a la propiedad",
+                    "Derecho al sufragio",
+                    "Derecho a trabajar",
+                    "Derecho a viajar"
+                ],
+                correcta: 1,
+                explicacion: "Se estableció el derecho al sufragio."
+            },
+            {
+                pregunta: "¿Era una democracia plena el sistema después de la Revolución francesa?",
+                opciones: [
+                    "Sí",
+                    "No, porque las mujeres y las personas más pobres no tenían derecho a participar en las elecciones",
+                    "Sí, todos podían votar",
+                    "Solo votaban los nobles"
+                ],
+                correcta: 1,
+                explicacion: "No era una democracia plena porque las mujeres y las personas más pobres no tenían derecho a participar en las elecciones."
+            },
+            {
+                pregunta: "¿Quién dio un golpe de Estado en Francia en 1799?",
+                opciones: [
+                    "Luis XVI",
+                    "Napoleón Bonaparte",
+                    "Carlos IV",
+                    "Fernando VII"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón Bonaparte dio un golpe de Estado en 1799."
+            },
+            {
+                pregunta: "¿Qué título recibió Napoleón en 1804?",
+                opciones: [
+                    "Rey",
+                    "Emperador",
+                    "Presidente",
+                    "Cónsul"
+                ],
+                correcta: 1,
+                explicacion: "En 1804 Napoleón recibió el título de emperador."
+            },
+            {
+                pregunta: "¿Qué política llevó a cabo Napoleón?",
+                opciones: [
+                    "De aislamiento",
+                    "De expansión en Europa",
+                    "De paz",
+                    "De comercio"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón llevó a cabo una política de expansión en Europa."
+            },
+            {
+                pregunta: "¿Por dónde extendió Napoleón su poder?",
+                opciones: [
+                    "Solo por Francia",
+                    "Por casi todo el continente europeo",
+                    "Por Asia",
+                    "Por América"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón extendió su poder por casi todo el continente europeo."
+            },
+            {
+                pregunta: "¿En qué año decidió Napoleón invadir Portugal?",
+                opciones: [
+                    "1799",
+                    "1807",
+                    "1808",
+                    "1814"
+                ],
+                correcta: 1,
+                explicacion: "En 1807 Napoleón decidió invadir Portugal."
+            },
+            {
+                pregunta: "¿Qué tenía que hacer Napoleón para invadir Portugal?",
+                opciones: [
+                    "Atacar por mar",
+                    "Atravesar España",
+                    "Rodear por el norte",
+                    "Esperar"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón tenía que atravesar España para invadir Portugal."
+            },
+            {
+                pregunta: "¿Quién era el rey de España que permitió a Napoleón atravesar España?",
+                opciones: [
+                    "Fernando VII",
+                    "Carlos IV",
+                    "Felipe V",
+                    "José I"
+                ],
+                correcta: 1,
+                explicacion: "Carlos IV era el rey de España que se lo permitió."
+            },
+            {
+                pregunta: "¿Qué hizo Napoleón al atravesar España?",
+                opciones: [
+                    "Solo pasó de largo",
+                    "Aprovechó para ocupar localidades españolas",
+                    "Ayudó a España",
+                    "Se retiró"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón aprovechó para ocupar varias localidades españolas."
+            },
+            {
+                pregunta: "¿A quién depuso Napoleón del trono español?",
+                opciones: [
+                    "A Fernando VII",
+                    "A Carlos IV",
+                    "A José I",
+                    "A Luis XVI"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón depuso a Carlos IV del trono español."
+            },
+            {
+                pregunta: "¿Por quién sustituyó Napoleón a Carlos IV?",
+                opciones: [
+                    "Por José I",
+                    "Por su hijo Fernando VII",
+                    "Por él mismo",
+                    "Por Luis XVI"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón sustituyó a Carlos IV por su hijo Fernando VII."
+            },
+            {
+                pregunta: "¿Qué hizo Napoleón con Fernando VII?",
+                opciones: [
+                    "Lo coronó rey",
+                    "Lo llevó prisionero a Francia",
+                    "Lo ejecutó",
+                    "Lo dejó gobernar"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón llevó prisionero a Francia a Fernando VII."
+            },
+            {
+                pregunta: "¿A quién nombró Napoleón rey de España?",
+                opciones: [
+                    "A Fernando VII",
+                    "A su hermano José I",
+                    "A Carlos IV",
+                    "A sí mismo"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón nombró rey de España a su hermano José I."
+            },
+            {
+                pregunta: "¿Aceptó el pueblo español al nuevo rey José I?",
+                opciones: [
+                    "Sí",
+                    "No",
+                    "Al principio sí",
+                    "Solo algunos"
+                ],
+                correcta: 1,
+                explicacion: "El pueblo no aceptó al nuevo rey."
+            },
+            {
+                pregunta: "¿Qué ocurrió el 2 de mayo de 1808?",
+                opciones: [
+                    "Se firmó la paz",
+                    "El pueblo se sublevó en Madrid",
+                    "Napoleón fue derrotado",
+                    "Fernando VII volvió"
+                ],
+                correcta: 1,
+                explicacion: "El 2 de mayo de 1808 el pueblo se sublevó en Madrid."
+            },
+            {
+                pregunta: "¿Qué comenzó después de la sublevación del 2 de mayo de 1808?",
+                opciones: [
+                    "La paz",
+                    "La guerra de la Independencia",
+                    "La Revolución francesa",
+                    "El imperio de Napoleón"
+                ],
+                correcta: 1,
+                explicacion: "Así comenzó la guerra de la Independencia."
+            },
+            {
+                pregunta: "¿En qué año terminó la guerra de la Independencia?",
+                opciones: [
+                    "1808",
+                    "1814",
+                    "1815",
+                    "1812"
+                ],
+                correcta: 1,
+                explicacion: "La guerra de la Independencia terminó en 1814."
+            },
+            {
+                pregunta: "¿Cómo terminó la guerra de la Independencia?",
+                opciones: [
+                    "Con la victoria de Napoleón",
+                    "Con la derrota de Francia",
+                    "Con un tratado de paz",
+                    "Sin ganador"
+                ],
+                correcta: 1,
+                explicacion: "La guerra terminó con la derrota de Francia."
+            },
+            {
+                pregunta: "¿Logró Napoleón vencer al Reino Unido?",
+                opciones: [
+                    "Sí",
+                    "No",
+                    "Solo parcialmente",
+                    "Nunca luchó contra ellos"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón tampoco logró vencer al Reino Unido."
+            },
+            {
+                pregunta: "¿Dónde cosechó Napoleón una enorme derrota?",
+                opciones: [
+                    "En España",
+                    "En Rusia",
+                    "En Portugal",
+                    "En Inglaterra"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón cosechó una enorme derrota en Rusia."
+            },
+            {
+                pregunta: "¿En qué año fue derrotado definitivamente Napoleón?",
+                opciones: [
+                    "1807",
+                    "1815",
+                    "1814",
+                    "1812"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón fue derrotado en 1815."
+            },
+            {
+                pregunta: "¿Qué le ocurrió a Napoleón después de ser derrotado?",
+                opciones: [
+                    "Volvió a Francia",
+                    "Fue desterrado a la isla de Santa Elena",
+                    "Fue ejecutado",
+                    "Huyó a América"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón fue desterrado a la isla de Santa Elena."
+            },
+            {
+                pregunta: "¿Dónde murió Napoleón?",
+                opciones: [
+                    "En Francia",
+                    "En la isla de Santa Elena",
+                    "En Rusia",
+                    "En España"
+                ],
+                correcta: 1,
+                explicacion: "Napoleón murió en la isla de Santa Elena pocos años después."
+            }
+        ];
+
+        const preguntasUnidad2 = [
+            {
+                pregunta: "¿En qué año comenzó la Guerra de la Independencia?",
+                opciones: [
+                    "1806",
+                    "1808",
+                    "1810",
+                    "1812"
+                ],
+                correcta: 1,
+                explicacion: "La Guerra de la Independencia comenzó en 1808."
+            },
+            {
+                pregunta: "¿Qué país realizó la ocupación militar que llevó a los patriotas a actuar?",
+                opciones: [
+                    "Inglaterra",
+                    "Francia",
+                    "Portugal",
+                    "Austria"
+                ],
+                correcta: 1,
+                explicacion: "Fue la ocupación militar francesa la que llevó a los patriotas a actuar."
+            },
+            {
+                pregunta: "¿Quiénes se organizaron contra la ocupación militar francesa?",
+                opciones: [
+                    "Los nobles",
+                    "Los patriotas",
+                    "El ejército real",
+                    "Los comerciantes"
+                ],
+                correcta: 1,
+                explicacion: "Los patriotas se organizaron contra la ocupación militar francesa."
+            },
+            {
+                pregunta: "¿En qué año eligieron los patriotas a sus representantes?",
+                opciones: [
+                    "1808",
+                    "1810",
+                    "1812",
+                    "1814"
+                ],
+                correcta: 1,
+                explicacion: "En 1810 los patriotas eligieron a sus representantes."
+            },
+            {
+                pregunta: "¿Qué se abrió en 1810?",
+                opciones: [
+                    "El parlamento de Madrid",
+                    "Las Cortes de Cádiz",
+                    "El congreso de Sevilla",
+                    "La asamblea de Valencia"
+                ],
+                correcta: 1,
+                explicacion: "En 1810 se abrieron las Cortes de Cádiz."
+            },
+            {
+                pregunta: "¿Qué hicieron en las Cortes de Cádiz?",
+                opciones: [
+                    "Declararon la guerra",
+                    "Redactaron la Constitución",
+                    "Nombraron un nuevo rey",
+                    "Firmaron la paz"
+                ],
+                correcta: 1,
+                explicacion: "En las Cortes de Cádiz redactaron la Constitución."
+            },
+            {
+                pregunta: "¿En qué año se aprobó la Constitución de Cádiz?",
+                opciones: [
+                    "1808",
+                    "1812",
+                    "1814",
+                    "1820"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución de Cádiz se aprobó en 1812."
+            },
+            {
+                pregunta: "¿Cuál era uno de los derechos establecidos en la Constitución de 1812?",
+                opciones: [
+                    "Monarquía absoluta",
+                    "División de poderes",
+                    "Poder total del rey",
+                    "Gobierno militar"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución estableció la división de poderes."
+            },
+            {
+                pregunta: "¿A quién pertenecía la soberanía según la Constitución de 1812?",
+                opciones: [
+                    "Al rey",
+                    "Al pueblo",
+                    "A la nobleza",
+                    "A la iglesia"
+                ],
+                correcta: 1,
+                explicacion: "Según la Constitución, la soberanía pertenecía al pueblo."
+            },
+            {
+                pregunta: "¿Quiénes tenían derecho de sufragio según la Constitución de 1812?",
+                opciones: [
+                    "Todos los ciudadanos",
+                    "Solo varones mayores de 25 años",
+                    "Todas las personas mayores de edad",
+                    "Solo los propietarios"
+                ],
+                correcta: 1,
+                explicacion: "El derecho de sufragio era solo para varones mayores de 25 años."
+            },
+            {
+                pregunta: "¿Qué edad mínima se requería para tener derecho de sufragio?",
+                opciones: [
+                    "18 años",
+                    "25 años",
+                    "21 años",
+                    "30 años"
+                ],
+                correcta: 1,
+                explicacion: "Se requería ser mayor de 25 años para tener derecho de sufragio."
+            },
+            {
+                pregunta: "¿Qué principio de igualdad estableció la Constitución?",
+                opciones: [
+                    "Igualdad de riquezas",
+                    "Igualdad ante la ley",
+                    "Igualdad de educación",
+                    "Igualdad de tierras"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución estableció la igualdad ante la ley."
+            },
+            {
+                pregunta: "¿Qué libertad reconoció la Constitución de 1812?",
+                opciones: [
+                    "Libertad de comercio",
+                    "Libertad de opinión",
+                    "Libertad de religión",
+                    "Libertad de viajar"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución reconoció la libertad de opinión."
+            },
+            {
+                pregunta: "¿Cuántos derechos principales estableció la Constitución de 1812?",
+                opciones: [
+                    "Dos",
+                    "Cuatro",
+                    "Tres",
+                    "Cinco"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución estableció cuatro derechos principales: división de poderes, soberanía del pueblo, igualdad ante la ley y libertad de opinión."
+            },
+            {
+                pregunta: "¿Las mujeres tenían derecho de sufragio en la Constitución de 1812?",
+                opciones: [
+                    "Sí",
+                    "No",
+                    "Solo las mayores de 30 años",
+                    "Solo las casadas"
+                ],
+                correcta: 1,
+                explicacion: "No, el derecho de sufragio era solo para varones mayores de 25 años."
+            }
+        ];
+
+        const preguntasUnidad2 = [
+            {
+                pregunta: "¿En qué año comenzó la Guerra de la Independencia?",
+                opciones: [
+                    "1806",
+                    "1808",
+                    "1810",
+                    "1812"
+                ],
+                correcta: 1,
+                explicacion: "La Guerra de la Independencia comenzó en 1808."
+            },
+            {
+                pregunta: "¿En qué año se deroga (elimina) la Constitución de 1812 por primera vez?",
+                opciones: [
+                    "1812",
+                    "1814",
+                    "1820",
+                    "1823"
+                ],
+                correcta: 1,
+                explicacion: "En 1814 se deroga la Constitución de 1812."
+            },
+            {
+                pregunta: "¿Qué significa 'derogar' la Constitución?",
+                opciones: [
+                    "Modificarla",
+                    "Eliminarla",
+                    "Mejorarla",
+                    "Publicarla"
+                ],
+                correcta: 1,
+                explicacion: "Derogar significa eliminar la Constitución."
+            },
+            {
+                pregunta: "¿Qué tipo de gobierno se restauró en 1814?",
+                opciones: [
+                    "Democracia",
+                    "Absolutismo",
+                    "República",
+                    "Monarquía constitucional"
+                ],
+                correcta: 1,
+                explicacion: "En 1814 se restauró el absolutismo."
+            },
+            {
+                pregunta: "¿Cómo se llama la primera etapa (1814-1820)?",
+                opciones: [
+                    "Trienio Liberal",
+                    "Sexenio Absolutista",
+                    "Década Ominosa",
+                    "Restauración"
+                ],
+                correcta: 1,
+                explicacion: "La primera etapa se llama Sexenio Absolutista (1814-1820)."
+            },
+            {
+                pregunta: "¿Cuántos años duró el Sexenio Absolutista?",
+                opciones: [
+                    "Tres años",
+                    "Seis años",
+                    "Diez años",
+                    "Doce años"
+                ],
+                correcta: 1,
+                explicacion: "El Sexenio Absolutista duró 6 años (1814-1820)."
+            },
+            {
+                pregunta: "¿En qué año se aprobó de nuevo la Constitución?",
+                opciones: [
+                    "1814",
+                    "1820",
+                    "1823",
+                    "1827"
+                ],
+                correcta: 1,
+                explicacion: "En 1820 se aprobó de nuevo la Constitución."
+            },
+            {
+                pregunta: "¿Cómo se llama la segunda etapa (1820-1823)?",
+                opciones: [
+                    "Sexenio Absolutista",
+                    "Trienio Liberal",
+                    "Década Ominosa",
+                    "Restauración"
+                ],
+                correcta: 1,
+                explicacion: "La segunda etapa se llama Trienio Liberal (1820-1823)."
+            },
+            {
+                pregunta: "¿Cuántos años duró el Trienio Liberal?",
+                opciones: [
+                    "Dos años",
+                    "Tres años",
+                    "Seis años",
+                    "Diez años"
+                ],
+                correcta: 1,
+                explicacion: "El Trienio Liberal duró 3 años (1820-1823)."
+            },
+            {
+                pregunta: "¿Qué hizo Fernando VII en 1820 al inicio del Trienio Liberal?",
+                opciones: [
+                    "Abdicó",
+                    "Juró la Constitución",
+                    "Huyó del país",
+                    "Declaró la guerra"
+                ],
+                correcta: 1,
+                explicacion: "Fernando VII juró la Constitución en 1820."
+            },
+            {
+                pregunta: "¿Qué tipo de gobierno había durante el Trienio Liberal?",
+                opciones: [
+                    "Absolutista",
+                    "Liberal (gobierno no absolutista)",
+                    "Dictadura",
+                    "Anarquía"
+                ],
+                correcta: 1,
+                explicacion: "Durante el Trienio Liberal el gobierno se liberó y ya no era absolutista."
+            },
+            {
+                pregunta: "¿En qué año vuelve el absolutismo después del Trienio Liberal?",
+                opciones: [
+                    "1820",
+                    "1823",
+                    "1827",
+                    "1833"
+                ],
+                correcta: 1,
+                explicacion: "En 1823 vuelve el absolutismo."
+            },
+            {
+                pregunta: "¿Cómo se llama la tercera etapa que comienza en 1823?",
+                opciones: [
+                    "Trienio Liberal",
+                    "Década Ominosa",
+                    "Sexenio Absolutista",
+                    "Restauración"
+                ],
+                correcta: 1,
+                explicacion: "La tercera etapa se llama Década Ominosa."
+            },
+            {
+                pregunta: "¿Hasta qué año duró la Década Ominosa?",
+                opciones: [
+                    "1827",
+                    "1833",
+                    "1840",
+                    "1843"
+                ],
+                correcta: 1,
+                explicacion: "La Década Ominosa duró hasta 1833."
+            },
+            {
+                pregunta: "¿Cuántos años aproximadamente duró la Década Ominosa?",
+                opciones: [
+                    "Cinco años",
+                    "Diez años",
+                    "Quince años",
+                    "Veinte años"
+                ],
+                correcta: 1,
+                explicacion: "La Década Ominosa duró aproximadamente 10 años (1823-1833)."
+            },
+            {
+                pregunta: "¿Qué prohibía la Ley Sálica?",
+                opciones: [
+                    "Las elecciones",
+                    "Que las mujeres gobernaran",
+                    "La libertad de expresión",
+                    "El comercio"
+                ],
+                correcta: 1,
+                explicacion: "La Ley Sálica prohibía a las mujeres gobernar."
+            },
+            {
+                pregunta: "¿Qué publicó Fernando VII para derogar la Ley Sálica?",
+                opciones: [
+                    "Un decreto real",
+                    "La Pragmática Sanción",
+                    "Una nueva constitución",
+                    "Un edicto"
+                ],
+                correcta: 1,
+                explicacion: "Fernando VII publicó la Pragmática Sanción."
+            },
+            {
+                pregunta: "¿Qué derogó la Pragmática Sanción?",
+                opciones: [
+                    "La Constitución",
+                    "El Auto Acordado de Felipe V (Ley Sálica)",
+                    "El Trienio Liberal",
+                    "El absolutismo"
+                ],
+                correcta: 1,
+                explicacion: "La Pragmática Sanción derogó el Auto Acordado de Felipe V (que era la Ley Sálica)."
+            },
+            {
+                pregunta: "¿Qué restauró la Pragmática Sanción?",
+                opciones: [
+                    "El absolutismo",
+                    "El orden sucesorio tradicional castellano",
+                    "La república",
+                    "La monarquía francesa"
+                ],
+                correcta: 1,
+                explicacion: "La Pragmática Sanción restauró el orden sucesorio tradicional castellano."
+            },
+            {
+                pregunta: "¿Por qué Fernando VII publicó la Pragmática Sanción?",
+                opciones: [
+                    "Para reformar el ejército",
+                    "Porque no tenía hijos varones y quería que su hija Isabel pudiera heredar el trono",
+                    "Para eliminar la Constitución",
+                    "Para declarar la guerra"
+                ],
+                correcta: 1,
+                explicacion: "Fernando VII no tenía hijos varones y quería que su hija Isabel (futura Isabel II) pudiera heredar el trono."
+            },
+            {
+                pregunta: "¿Quién fue el rey que permitió que Isabel II pudiera gobernar?",
+                opciones: [
+                    "Carlos IV",
+                    "Fernando VII",
+                    "Alfonso XII",
+                    "Felipe V"
+                ],
+                correcta: 1,
+                explicacion: "Fernando VII fue quien publicó la Pragmática Sanción para que Isabel pudiera gobernar."
+            },
+            {
+                pregunta: "Gracias a la Pragmática Sanción, ¿qué pudo hacer Isabel?",
+                opciones: [
+                    "Estudiar en el extranjero",
+                    "Gobernar",
+                    "Casarse libremente",
+                    "Viajar"
+                ],
+                correcta: 1,
+                explicacion: "Gracias a la Pragmática Sanción, Isabel pudo gobernar."
+            },
+            {
+                pregunta: "¿Cuántas etapas principales hubo entre 1814 y 1833?",
+                opciones: [
+                    "Dos",
+                    "Tres",
+                    "Cuatro",
+                    "Cinco"
+                ],
+                correcta: 1,
+                explicacion: "Hubo tres etapas: Sexenio Absolutista, Trienio Liberal y Década Ominosa."
+            },
+            {
+                pregunta: "¿Qué tipo de gobierno había durante el Sexenio Absolutista?",
+                opciones: [
+                    "Liberal",
+                    "Absolutista",
+                    "Democrático",
+                    "Republicano"
+                ],
+                correcta: 1,
+                explicacion: "Durante el Sexenio Absolutista había un gobierno absolutista."
+            },
+            {
+                pregunta: "¿Qué tipo de gobierno había durante la Década Ominosa?",
+                opciones: [
+                    "Liberal",
+                    "Absolutista",
+                    "Democrático",
+                    "Constitucional"
+                ],
+                correcta: 1,
+                explicacion: "Durante la Década Ominosa volvió el absolutismo."
+            },
+            {
+                pregunta: "¿En cuál de estas etapas estuvo vigente la Constitución?",
+                opciones: [
+                    "Sexenio Absolutista",
+                    "Trienio Liberal",
+                    "Década Ominosa",
+                    "En ninguna"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución estuvo vigente durante el Trienio Liberal."
+            },
+            {
+                pregunta: "¿Cuántas veces se eliminó la Constitución entre 1814 y 1833?",
+                opciones: [
+                    "Una vez",
+                    "Dos veces",
+                    "Tres veces",
+                    "Nunca"
+                ],
+                correcta: 1,
+                explicacion: "La Constitución se eliminó dos veces: en 1814 y en 1823."
+            }
+        ];
+
+        const preguntasUnidad3 = [
+            {
+                pregunta: "¿En qué año comenzó el periodo de Isabel II?",
+                opciones: [
+                    "1827",
+                    "1833",
+                    "1840",
+                    "1843"
+                ],
+                correcta: 1,
+                explicacion: "El periodo de Isabel II comenzó en 1833."
+            },
+            {
+                pregunta: "¿Cómo se llama el primer periodo de Isabel II?",
+                opciones: [
+                    "Reinado personal",
+                    "Periodo de Regencia",
+                    "Sexenio revolucionario",
+                    "Restauración"
+                ],
+                correcta: 1,
+                explicacion: "El primer periodo se llama Periodo de Regencia."
+            },
+            {
+                pregunta: "¿Quién fue la regente durante el Periodo de Regencia?",
+                opciones: [
+                    "Isabel II",
+                    "María Cristina",
+                    "La reina Isabel",
+                    "Alfonso XII"
+                ],
+                correcta: 1,
+                explicacion: "María Cristina fue la regente."
+            },
+            {
+                pregunta: "¿En qué años gobernó María Cristina como regente?",
+                opciones: [
+                    "1827-1833",
+                    "1833-1840",
+                    "1840-1848",
+                    "1843-1868"
+                ],
+                correcta: 1,
+                explicacion: "María Cristina gobernó como regente de 1833 a 1840."
+            },
+            {
+                pregunta: "¿Cuántos años duró la regencia de María Cristina?",
+                opciones: [
+                    "5 años",
+                    "7 años",
+                    "10 años",
+                    "13 años"
+                ],
+                correcta: 1,
+                explicacion: "La regencia de María Cristina duró 7 años (1833-1840)."
+            },
+            {
+                pregunta: "¿Qué ocurrió en 1848?",
+                opciones: [
+                    "Terminó el reinado de Isabel II",
+                    "Se construyó el primer ferrocarril",
+                    "Comenzó la I República",
+                    "Se aprobó la Constitución"
+                ],
+                correcta: 1,
+                explicacion: "En 1848 se construyó el primer ferrocarril."
+            },
+            {
+                pregunta: "¿En qué año se construyó el primer ferrocarril en España?",
+                opciones: [
+                    "1833",
+                    "1848",
+                    "1843",
+                    "1868"
+                ],
+                correcta: 1,
+                explicacion: "El primer ferrocarril se construyó en 1848."
+            },
+            {
+                pregunta: "¿Cuándo se construyó el primer ferrocarril durante el reinado de Isabel II?",
+                opciones: [
+                    "Durante la Regencia",
+                    "Durante su reinado personal, en 1848",
+                    "Durante el Sexenio Revolucionario",
+                    "Durante la Restauración"
+                ],
+                correcta: 1,
+                explicacion: "El primer ferrocarril se construyó en 1848, durante el reinado personal de Isabel II."
+            },
+            {
+                pregunta: "¿En qué año comenzó Isabel II su reinado personal?",
+                opciones: [
+                    "1833",
+                    "1843",
+                    "1848",
+                    "1868"
+                ],
+                correcta: 1,
+                explicacion: "Isabel II comenzó su reinado personal en 1843."
+            },
+            {
+                pregunta: "¿Hasta qué año duró el reinado personal de Isabel II?",
+                opciones: [
+                    "1848",
+                    "1868",
+                    "1872",
+                    "1874"
+                ],
+                correcta: 1,
+                explicacion: "El reinado personal de Isabel II duró hasta 1868."
+            },
+            {
+                pregunta: "¿Cuántos años duró el reinado personal de Isabel II?",
+                opciones: [
+                    "15 años",
+                    "25 años",
+                    "30 años",
+                    "35 años"
+                ],
+                correcta: 1,
+                explicacion: "El reinado personal de Isabel II duró 25 años (1843-1868)."
+            },
+            {
+                pregunta: "¿Qué hubo durante el reinado de Isabel II (1843-1848)?",
+                opciones: [
+                    "Solo paz",
+                    "Partidos propuestos/moderados",
+                    "Guerra constante",
+                    "Una república"
+                ],
+                correcta: 1,
+                explicacion: "Durante su reinado hubo partidos propuestos/moderados."
+            },
+            {
+                pregunta: "¿Quién apoyó a Isabel II durante el Periodo de Regencia?",
+                opciones: [
+                    "Los absolutistas",
+                    "Los liberales",
+                    "Los carlistas",
+                    "Los republicanos"
+                ],
+                correcta: 1,
+                explicacion: "Los liberales apoyaron a Isabel II durante el Periodo de Regencia."
+            },
+            {
+                pregunta: "¿En qué año comenzó el gobierno provisional?",
+                opciones: [
+                    "1843",
+                    "1868",
+                    "1872",
+                    "1874"
+                ],
+                correcta: 1,
+                explicacion: "El gobierno provisional comenzó en 1868."
+            },
+            {
+                pregunta: "¿Quién fue el militar que dirigió el gobierno provisional en 1868?",
+                opciones: [
+                    "Fernando VII",
+                    "Serrano",
+                    "Alfonso XII",
+                    "María Cristina"
+                ],
+                correcta: 1,
+                explicacion: "El militar Serrano dirigió el gobierno provisional en 1868."
+            },
+            {
+                pregunta: "¿Qué tipo de gobierno hubo en 1868?",
+                opciones: [
+                    "Monarquía absoluta",
+                    "Gobierno provisional con el militar Serrano",
+                    "República estable",
+                    "Dictadura civil"
+                ],
+                correcta: 1,
+                explicacion: "En 1868 hubo un gobierno provisional con el militar Serrano."
+            },
+            {
+                pregunta: "¿Durante qué periodo gobernó Serrano?",
+                opciones: [
+                    "Durante el Trienio Liberal",
+                    "Durante el Sexenio Revolucionario",
+                    "Durante la Restauración",
+                    "Durante la Regencia"
+                ],
+                correcta: 1,
+                explicacion: "Serrano gobernó durante el Sexenio Revolucionario."
+            },
+            {
+                pregunta: "¿Qué periodo comenzó en 1868?",
+                opciones: [
+                    "El Trienio Liberal",
+                    "El Sexenio Revolucionario",
+                    "La I República",
+                    "La Restauración"
+                ],
+                correcta: 1,
+                explicacion: "En 1868 comenzó el Sexenio Revolucionario."
+            },
+            {
+                pregunta: "¿Hasta qué año duró el Sexenio Revolucionario?",
+                opciones: [
+                    "1870",
+                    "1874",
+                    "1872",
+                    "1876"
+                ],
+                correcta: 1,
+                explicacion: "El Sexenio Revolucionario duró hasta 1874."
+            },
+            {
+                pregunta: "¿Cuántos años duró aproximadamente el Sexenio Revolucionario?",
+                opciones: [
+                    "2 años",
+                    "6 años",
+                    "4 años",
+                    "8 años"
+                ],
+                correcta: 1,
+                explicacion: "El Sexenio Revolucionario duró 6 años (1868-1874)."
+            },
+            {
+                pregunta: "¿Qué ocurrió durante el Sexenio Revolucionario?",
+                opciones: [
+                    "Solo hubo monarquía",
+                    "Hubo la I República",
+                    "Volvió Isabel II",
+                    "Continuó el absolutismo"
+                ],
+                correcta: 1,
+                explicacion: "Durante el Sexenio Revolucionario hubo la I República."
+            },
+            {
+                pregunta: "¿En qué año comenzó la I República?",
+                opciones: [
+                    "1868",
+                    "1873",
+                    "1872",
+                    "1874"
+                ],
+                correcta: 1,
+                explicacion: "La I República comenzó en 1873."
+            },
+            {
+                pregunta: "¿Hasta qué año duró la I República?",
+                opciones: [
+                    "1872",
+                    "1874",
+                    "1873",
+                    "1875"
+                ],
+                correcta: 1,
+                explicacion: "La I República duró hasta 1874."
+            },
+            {
+                pregunta: "¿Cuánto tiempo duró la I República?",
+                opciones: [
+                    "1 año",
+                    "11 meses",
+                    "2 años",
+                    "6 meses"
+                ],
+                correcta: 1,
+                explicacion: "La I República duró solo 11 meses (1873-1874)."
+            },
+            {
+                pregunta: "¿En qué año fue la Restauración con Alfonso XII?",
+                opciones: [
+                    "1868",
+                    "1874",
+                    "1873",
+                    "1876"
+                ],
+                correcta: 1,
+                explicacion: "La Restauración con Alfonso XII fue en 1874."
+            },
+            {
+                pregunta: "¿Quién subió al trono en la Restauración de 1874?",
+                opciones: [
+                    "Isabel II",
+                    "Alfonso XII",
+                    "Fernando VII",
+                    "Serrano"
+                ],
+                correcta: 1,
+                explicacion: "Alfonso XII subió al trono en la Restauración de 1874."
+            },
+            {
+                pregunta: "¿Qué ocurrió en 1874?",
+                opciones: [
+                    "Continuó la República",
+                    "Restauración con Alfonso XII",
+                    "Volvió Isabel II",
+                    "Gobierno de Serrano"
+                ],
+                correcta: 1,
+                explicacion: "En 1874 hubo la Restauración con Alfonso XII."
+            },
+            {
+                pregunta: "¿Qué sistema político vino en 1874?",
+                opciones: [
+                    "República",
+                    "Restauración monárquica con Alfonso XII",
+                    "Dictadura",
+                    "Gobierno provisional"
+                ],
+                correcta: 1,
+                explicacion: "En 1874 vino la Restauración monárquica con Alfonso XII."
+            },
+            {
+                pregunta: "¿Qué periodo terminó con la llegada del Sexenio Revolucionario en 1868?",
+                opciones: [
+                    "El Periodo de Regencia",
+                    "El reinado personal de Isabel II",
+                    "La I República",
+                    "La Restauración"
+                ],
+                correcta: 1,
+                explicacion: "El Sexenio Revolucionario en 1868 terminó con el reinado personal de Isabel II."
+            }
+        ];
+
+        let preguntas = [];
+        let preguntaActual = 0;
+        let puntuacion = 0;
+        let preguntasAleatorias = [];
+        let unidadSeleccionada = 0;
+        let ocultarRespuestas = true;
+        let preguntasFalladas = [];
+        let respuestasUsuario = [];
+
+        function seleccionarUnidad(unidad) {
+            unidadSeleccionada = unidad;
+            ocultarRespuestas = document.getElementById('ocultarRespuestas').checked;
+            
+            if (unidad === 1) {
+                preguntas = [...preguntasUnidad1];
+            } else if (unidad === 2) {
+                preguntas = [...preguntasUnidad2];
+            } else if (unidad === 3) {
+                preguntas = [...preguntasUnidad3];
+            } else if (unidad === 4) {
+                preguntas = [...preguntasUnidad4];
+            }
+            iniciarJuego();
+        }
+
+        function iniciarJuego() {
+            document.getElementById('inicio').style.display = 'none';
+            document.getElementById('juego').style.display = 'block';
+            document.getElementById('resultado').style.display = 'none';
+            preguntaActual = 0;
+            puntuacion = 0;
+            preguntasFalladas = [];
+            respuestasUsuario = [];
+            
+            preguntasAleatorias = [...preguntas];
+            
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            if (preguntaActual >= preguntasAleatorias.length) {
+                mostrarResultado();
+                return;
+            }
+
+            const pregunta = preguntasAleatorias[preguntaActual];
+            const container = document.getElementById('pregunta-actual');
+            
+            document.getElementById('progreso').textContent = 
+                `Pregunta ${preguntaActual + 1} de ${preguntasAleatorias.length}`;
+            
+            let html = `<h2>${pregunta.pregunta}</h2>`;
+            
+            if (ocultarRespuestas) {
+                html += `<button class="btn btn-listo" onclick="mostrarOpciones()">👁️ Mostrar Respuestas (Listo)</button>
+                         <div class="opciones ocultas" id="opciones-container">`;
+            } else {
+                html += `<div class="opciones" id="opciones-container">`;
+            }
+            
+            pregunta.opciones.forEach((opcion, index) => {
+                html += `<div class="opcion" data-index="${index}">${opcion}</div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            document.getElementById('btn-siguiente').style.display = 'none';
+            document.getElementById('feedback').classList.remove('visible');
+            
+            // Si no está oculto, activar clicks directamente
+            if (!ocultarRespuestas) {
+                const opciones = document.querySelectorAll('.opcion');
+                opciones.forEach(opcion => {
+                    opcion.onclick = function() {
+                        seleccionarOpcion(parseInt(this.getAttribute('data-index')));
+                    };
+                });
+            }
+        }
+
+        function mostrarOpciones() {
+            const opcionesContainer = document.getElementById('opciones-container');
+            opcionesContainer.classList.remove('ocultas');
+            
+            const opciones = opcionesContainer.querySelectorAll('.opcion');
+            opciones.forEach(opcion => {
+                opcion.onclick = function() {
+                    seleccionarOpcion(parseInt(this.getAttribute('data-index')));
+                };
+            });
+            
+            event.target.style.display = 'none';
+        }
+
+        function seleccionarOpcion(index) {
+            const pregunta = preguntasAleatorias[preguntaActual];
+            const opciones = document.querySelectorAll('.opcion');
+            
+            opciones.forEach(opcion => {
+                opcion.classList.add('deshabilitada');
+                opcion.onclick = null;
+            });
+            
+            const esCorrecta = index === pregunta.correcta;
+            respuestasUsuario.push({
+                pregunta: pregunta,
+                respuestaUsuario: index,
+                correcta: esCorrecta
+            });
+            
+            if (esCorrecta) {
+                opciones[index].classList.add('correcta');
+                puntuacion++;
+                document.getElementById('feedback').innerHTML = 
+                    `<strong>✅ ¡Correcto!</strong><br>${pregunta.explicacion}`;
+            } else {
+                opciones[index].classList.add('incorrecta');
+                opciones[pregunta.correcta].classList.add('correcta');
+                preguntasFalladas.push(pregunta);
+                document.getElementById('feedback').innerHTML = 
+                    `<strong>❌ Incorrecto.</strong><br>${pregunta.explicacion}`;
+            }
+            
+            document.getElementById('feedback').classList.add('visible');
+            document.getElementById('btn-siguiente').style.display = 'block';
+        }
+
+        function siguientePregunta() {
+            preguntaActual++;
+            mostrarPregunta();
+        }
+
+        function mostrarResultado() {
+            document.getElementById('juego').style.display = 'none';
+            document.getElementById('resultado').style.display = 'block';
+            
+            const porcentaje = Math.round((puntuacion / preguntasAleatorias.length) * 100);
+            document.getElementById('puntuacion-final').textContent = 
+                `${puntuacion} / ${preguntasAleatorias.length} (${porcentaje}%)`;
+            
+            let mensaje = '';
+            if (porcentaje === 100) {
+                mensaje = '¡Perfecto! 🌟 ¡Dominas completamente el tema!';
+            } else if (porcentaje >= 80) {
+                mensaje = '¡Excelente! 🎉 Tienes muy buenos conocimientos.';
+            } else if (porcentaje >= 60) {
+                mensaje = '¡Bien! 👍 Vas por buen camino, sigue repasando.';
+            } else {
+                mensaje = '¡Ánimo! 💪 Repasa el material y vuelve a intentarlo.';
+            }
+            
+            document.getElementById('mensaje-final').textContent = mensaje;
+            
+            // Mostrar botón de repetir falladas si hay preguntas incorrectas
+            const btnRepetir = document.getElementById('btn-repetir-falladas');
+            if (preguntasFalladas.length > 0) {
+                btnRepetir.style.display = 'block';
+            } else {
+                btnRepetir.style.display = 'none';
+            }
+        }
+
+        function repetirFalladas() {
+            preguntaActual = 0;
+            puntuacion = 0;
+            preguntasAleatorias = [...preguntasFalladas];
+            preguntasFalladas = [];
+            respuestasUsuario = [];
+            
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('juego').style.display = 'block';
+            
+            mostrarPregunta();
+        }
+
+        function volverAlInicio() {
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('juego').style.display = 'none';
+            document.getElementById('inicio').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
